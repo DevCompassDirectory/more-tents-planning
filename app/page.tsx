@@ -1,4 +1,27 @@
-export default function Home() {
+import { createClient } from '@/lib/supabase/server';
+
+export default async function Home() {
+	let connectionStatus: string;
+	let statusColor: string;
+
+	try {
+		const supabase = await createClient();
+		const { data, error } = await supabase.auth.getUser();
+		if (error && error.message !== 'Auth session missing!') {
+			connectionStatus = `Fout: ${error.message}`;
+			statusColor = 'text-red-700';
+		} else if (data.user) {
+			connectionStatus = `Ingelogd als ${data.user.email}`;
+			statusColor = 'text-forest-600';
+		} else {
+			connectionStatus = 'Verbonden, geen sessie';
+			statusColor = 'text-forest-600';
+		}
+	} catch (e) {
+		connectionStatus = `Verbindingsfout: ${(e as Error).message}`;
+		statusColor = 'text-red-700';
+	}
+
 	return (
 		<main className='min-h-screen p-12 flex flex-col items-center justify-center gap-10'>
 			<div className='text-center'>
@@ -44,13 +67,13 @@ export default function Home() {
 				/>
 			</div>
 
-			<div className='flex gap-3'>
-				<button className='px-6 py-3 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-full transition-colors'>
-					Primaire knop
-				</button>
-				<button className='px-6 py-3 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-full border border-cream-300 transition-colors'>
-					Secundaire knop
-				</button>
+			<div className='bg-white border border-cream-300 rounded-2xl px-6 py-4 shadow-sm'>
+				<div className='text-xs uppercase tracking-widest text-charcoal-900/60 mb-1'>
+					Supabase status
+				</div>
+				<div className={`font-medium ${statusColor}`}>
+					{connectionStatus}
+				</div>
 			</div>
 		</main>
 	);
