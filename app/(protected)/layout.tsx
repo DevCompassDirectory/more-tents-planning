@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Header } from '@/components/Header';
+import { NewProjectFab } from '@/components/NewProjectFab';
 
 export default async function ProtectedLayout({
 	children,
@@ -20,6 +21,7 @@ export default async function ProtectedLayout({
 		<>
 			<Header user={user} />
 			{children}
+			<NewProjectFab />
 		</>
 	);
 }

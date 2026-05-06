@@ -1,7 +1,10 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+	allowedDevOrigins: ['192.168.178.130'],
+	devIndicators: {
+		position: 'bottom-left',
+	},
 };
 
 export default nextConfig;
