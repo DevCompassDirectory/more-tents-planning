@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { Header } from '@/components/Header';
 
 export default async function ProtectedLayout({
 	children,
@@ -15,5 +16,10 @@ export default async function ProtectedLayout({
 		redirect('/login');
 	}
 
-	return <>{children}</>;
+	return (
+		<>
+			<Header user={user} />
+			{children}
+		</>
+	);
 }

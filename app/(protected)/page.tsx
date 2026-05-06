@@ -1,39 +1,49 @@
-import { createClient } from '@/lib/supabase/server';
-import { logout } from '@/lib/auth/actions';
+import { Tabs } from '@/components/Tabs';
 
-export default async function Home() {
-	const supabase = await createClient();
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+export default async function Home({
+	searchParams,
+}: {
+	searchParams: Promise<{ tab?: string }>;
+}) {
+	const params = await searchParams;
+	const activeTab = params.tab === 'lijst' ? 'lijst' : 'kalender';
 
 	return (
-		<main className='min-h-screen p-12 flex flex-col items-center justify-center gap-10'>
-			<div className='text-center'>
-				<h1 className='font-display text-5xl md:text-6xl text-forest-500 leading-tight'>
-					More Tents{' '}
-					<span className='text-sand-400 italic'>Planning</span>
-				</h1>
-				<p className='mt-3 text-charcoal-900/70 tracking-widest uppercase text-xs'>
-					Projectbeheer en planning
-				</p>
-			</div>
+		<>
+			<Tabs active={activeTab} />
+			<main className='max-w-6xl mx-auto px-6 py-8'>
+				{activeTab === 'kalender' ? (
+					<CalendarPlaceholder />
+				) : (
+					<ListPlaceholder />
+				)}
+			</main>
+		</>
+	);
+}
 
-			<div className='bg-white border border-cream-300 rounded-2xl px-6 py-4 shadow-sm text-center'>
-				<div className='text-xs uppercase tracking-widest text-charcoal-900/60 mb-1'>
-					Ingelogd als
-				</div>
-				<div className='font-medium text-forest-600'>{user?.email}</div>
+function CalendarPlaceholder() {
+	return (
+		<div className='bg-white rounded-2xl border border-cream-300 p-16 text-center'>
+			<div className='font-display text-3xl text-forest-500 mb-2'>
+				Kalender
 			</div>
+			<p className='text-sm text-charcoal-900/60'>
+				Hier komt de maandkalender met op- en afbouw events.
+			</p>
+		</div>
+	);
+}
 
-			<form action={logout}>
-				<button
-					type='submit'
-					className='px-6 py-3 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-full transition-colors'
-				>
-					Uitloggen
-				</button>
-			</form>
-		</main>
+function ListPlaceholder() {
+	return (
+		<div className='bg-white rounded-2xl border border-cream-300 p-16 text-center'>
+			<div className='font-display text-3xl text-forest-500 mb-2'>
+				Lijst
+			</div>
+			<p className='text-sm text-charcoal-900/60'>
+				Hier komt de projectlijst met filters.
+			</p>
+		</div>
 	);
 }
