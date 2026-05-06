@@ -1,4 +1,5 @@
 import { Tabs } from '@/components/Tabs';
+import { ProjectList } from '@/components/ProjectList';
 
 export default async function Home({
 	searchParams,
@@ -15,7 +16,7 @@ export default async function Home({
 				{activeTab === 'kalender' ? (
 					<CalendarPlaceholder />
 				) : (
-					<ListPlaceholder />
+					<ProjectList />
 				)}
 			</main>
 		</>
@@ -25,24 +26,11 @@ export default async function Home({
 function CalendarPlaceholder() {
 	return (
 		<div className='bg-white rounded-2xl border border-cream-300 p-16 text-center'>
-			<div className='font-display text-3xl text-forest-500 mb-2'>
+			<div className='font-display text-2xl text-forest-500 mb-2'>
 				Kalender
 			</div>
 			<p className='text-sm text-charcoal-900/60'>
 				Hier komt de maandkalender met op- en afbouw events.
-			</p>
-		</div>
-	);
-}
-
-function ListPlaceholder() {
-	return (
-		<div className='bg-white rounded-2xl border border-cream-300 p-16 text-center'>
-			<div className='font-display text-3xl text-forest-500 mb-2'>
-				Lijst
-			</div>
-			<p className='text-sm text-charcoal-900/60'>
-				Hier komt de projectlijst met filters.
 			</p>
 		</div>
 	);
