@@ -3,16 +3,31 @@
 import type { Project } from '@/lib/types/database';
 import { statusBadgeClasses } from '@/lib/projects/status';
 import { formatDate, formatTime } from '@/lib/utils/date';
+import { isUnseen } from '@/lib/projects/seen';
+import { markAsSeen } from '@/lib/projects/actions';
 
 export function ProjectDetail({
 	project: p,
+	currentUserEmail,
 	onClose,
 	onEdit,
 }: {
 	project: Project;
+	currentUserEmail: string;
 	onClose: () => void;
 	onEdit: () => void;
 }) {
+	const unseen = isUnseen(p, currentUserEmail);
+
+	async function handleMarkAsSeen() {
+		const result = await markAsSeen(p.id);
+		if (result.error) {
+			window.alert(result.error);
+		} else {
+			onClose();
+		}
+	}
+
 	return (
 		<div>
 			<div className='px-7 pt-6 pb-4'>
@@ -180,6 +195,15 @@ export function ProjectDetail({
 									</div>
 								</div>
 							))}
+						{unseen && (
+							<button
+								type='button'
+								onClick={handleMarkAsSeen}
+								className='mt-2 px-3 py-1.5 text-xs font-medium bg-white border border-orange-300 text-orange-800 hover:bg-orange-100 rounded-lg transition-colors'
+							>
+								Als gezien markeren ✓
+							</button>
+						)}
 					</div>
 				)}
 			</div>

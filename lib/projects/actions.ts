@@ -237,3 +237,43 @@ export async function deleteProject(
 	revalidatePath('/', 'page');
 	return { error: null };
 }
+
+export async function markAsSeen(
+	projectId: string,
+): Promise<{ error: string | null }> {
+	const supabase = await createClient();
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+
+	if (!user) return { error: 'Niet ingelogd' };
+
+	const userEmail = user.email ?? '';
+
+	const { data: current, error: fetchErr } = await supabase
+		.from('projects')
+		.select('seen_by')
+		.eq('id', projectId)
+		.single();
+
+	if (fetchErr || !current) return { error: 'Project niet gevonden' };
+
+	const currentSeenBy = Array.isArray(current.seen_by) ? current.seen_by : [];
+	if (currentSeenBy.includes(userEmail)) {
+		return { error: null };
+	}
+
+	const newSeenBy = [...currentSeenBy, userEmail];
+
+	const { error } = await supabase
+		.from('projects')
+		.update({ seen_by: newSeenBy })
+		.eq('id', projectId);
+
+	if (error) {
+		return { error: 'Markeren mislukt: ' + error.message };
+	}
+
+	revalidatePath('/', 'page');
+	return { error: null };
+}
