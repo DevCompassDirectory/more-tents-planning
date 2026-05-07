@@ -33,3 +33,29 @@ body {
 	color: var(--color-charcoal-900);
 	font-family: var(--font-sans);
 }
+
+@media print {
+	body * {
+		visibility: hidden;
+	}
+	#pakbon-print,
+	#pakbon-print * {
+		visibility: visible;
+	}
+	#pakbon-print {
+		position: absolute !important;
+		left: 0;
+		top: 0;
+		width: 100%;
+		padding: 0 !important;
+		background: white !important;
+	}
+	.no-print {
+		display: none !important;
+	}
+}
+
+@page {
+	size: A4;
+	margin: 18mm;
+}

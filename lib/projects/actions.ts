@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import type { LineItemCategorie } from '@/lib/types/database';
 
 export type CreateProjectState = {
 	error: string | null;
@@ -400,6 +401,55 @@ export async function createProjectFromPdf(
 			if (fileEntryError) {
 				console.error('Failed to insert project_file:', fileEntryError);
 			}
+		}
+	}
+
+	revalidatePath('/', 'page');
+	return { error: null, success: true };
+}
+
+export type UpdateLineItemsState = {
+	error: string | null;
+	success: boolean;
+};
+
+export async function updateLineItems(
+	projectId: string,
+	items: { categorie: LineItemCategorie; naam: string; aantal: string }[],
+): Promise<UpdateLineItemsState> {
+	const supabase = await createClient();
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+	if (!user) return { error: 'Niet ingelogd', success: false };
+
+	const { error: deleteError } = await supabase
+		.from('line_items')
+		.delete()
+		.eq('project_id', projectId);
+	if (deleteError) {
+		return {
+			error: 'Verwijderen oude artikelen mislukt: ' + deleteError.message,
+			success: false,
+		};
+	}
+
+	if (items.length > 0) {
+		const rows = items.map((item, idx) => ({
+			project_id: projectId,
+			categorie: item.categorie,
+			naam: item.naam,
+			aantal: item.aantal,
+			sort_order: idx,
+		}));
+		const { error: insertError } = await supabase
+			.from('line_items')
+			.insert(rows);
+		if (insertError) {
+			return {
+				error: 'Opslaan artikelen mislukt: ' + insertError.message,
+				success: false,
+			};
 		}
 	}
 
