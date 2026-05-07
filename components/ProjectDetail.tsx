@@ -5,6 +5,7 @@ import { statusBadgeClasses } from '@/lib/projects/status';
 import { formatDate, formatTime } from '@/lib/utils/date';
 import { isUnseen } from '@/lib/projects/seen';
 import { markAsSeen } from '@/lib/projects/actions';
+import { ProjectFiles } from '@/components/ProjectFiles';
 
 export function ProjectDetail({
 	project: p,
@@ -152,6 +153,7 @@ export function ProjectDetail({
 						</div>
 					</div>
 				)}
+				<ProjectFiles projectId={p.id} />
 
 				{p.changes && p.changes.length > 0 && (
 					<div className='bg-orange-50 border border-orange-200 rounded-xl p-4 mt-4'>
