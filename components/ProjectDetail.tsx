@@ -233,36 +233,38 @@ export function ProjectDetail({
 					)}
 				</div>
 
-				<div className='flex gap-3 px-7 py-4 border-t border-cream-300 sticky bottom-0 bg-white'>
-					<button
-						type='button'
-						onClick={() => setPakbonOpen(true)}
-						className='px-5 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors'
-					>
-						📋 Pakbon
-					</button>
-					<div className='flex-1' />
-					<button
-						type='button'
-						onClick={onClose}
-						className='px-5 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors'
-					>
-						Sluiten
-					</button>
-					<button
-						type='button'
-						onClick={handleDelete}
-						className='px-3 py-1.5 text-xs font-medium bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors'
-					>
-						🗑 Project verwijderen
-					</button>
-					<button
-						type='button'
-						onClick={onEdit}
-						className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-xl transition-colors'
-					>
-						Bewerken
-					</button>
+				<div className='px-5 sm:px-7 py-3 sm:py-4 border-t border-cream-300 sticky bottom-0 bg-white'>
+					<div className='grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3'>
+						<button
+							type='button'
+							onClick={() => setPakbonOpen(true)}
+							className='px-4 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors text-sm'
+						>
+							📋 Pakbon
+						</button>
+						<button
+							type='button'
+							onClick={handleDelete}
+							className='px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-xl transition-colors text-sm'
+						>
+							🗑 Verwijderen
+						</button>
+						<div className='hidden sm:block sm:flex-1' />
+						<button
+							type='button'
+							onClick={onClose}
+							className='px-4 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors text-sm'
+						>
+							Sluiten
+						</button>
+						<button
+							type='button'
+							onClick={onEdit}
+							className='px-4 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-xl transition-colors text-sm'
+						>
+							Bewerken
+						</button>
+					</div>
 				</div>
 			</div>
 
