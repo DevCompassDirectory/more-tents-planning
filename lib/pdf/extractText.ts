@@ -1,17 +1,23 @@
 'use client';
 
-import * as pdfjsLib from 'pdfjs-dist';
-
 let workerInitialized = false;
+let pdfjsLibPromise: Promise<typeof import('pdfjs-dist')> | null = null;
 
-function initWorker() {
-	if (workerInitialized) return;
-	pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-	workerInitialized = true;
+function loadPdfjs() {
+	if (!pdfjsLibPromise) {
+		pdfjsLibPromise = import('pdfjs-dist').then((lib) => {
+			if (!workerInitialized) {
+				lib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+				workerInitialized = true;
+			}
+			return lib;
+		});
+	}
+	return pdfjsLibPromise;
 }
 
 export async function extractPdfText(file: File): Promise<string> {
-	initWorker();
+	const pdfjsLib = await loadPdfjs();
 
 	const arrayBuffer = await file.arrayBuffer();
 	const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
