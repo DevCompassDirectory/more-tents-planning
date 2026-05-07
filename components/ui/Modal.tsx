@@ -7,11 +7,13 @@ export function Modal({
 	onClose,
 	title,
 	children,
+	wide,
 }: {
 	open: boolean;
 	onClose: () => void;
 	title: string;
 	children: React.ReactNode;
+	wide?: boolean;
 }) {
 	useEffect(() => {
 		if (!open) return;
@@ -35,7 +37,11 @@ export function Modal({
 				if (e.target === e.currentTarget) onClose();
 			}}
 		>
-			<div className='bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden'>
+			<div
+				className={`bg-white rounded-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden ${
+					wide ? 'max-w-6xl' : 'max-w-2xl'
+				}`}
+			>
 				<div className='px-7 py-5 border-b border-cream-300 flex items-center justify-between shrink-0'>
 					<div className='font-display text-2xl'>{title}</div>
 					<button

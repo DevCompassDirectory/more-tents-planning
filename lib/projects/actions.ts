@@ -277,3 +277,132 @@ export async function markAsSeen(
 	revalidatePath('/', 'page');
 	return { error: null };
 }
+
+export async function createProjectFromPdf(
+	_prevState: CreateProjectState,
+	formData: FormData,
+): Promise<CreateProjectState> {
+	const supabase = await createClient();
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+
+	if (!user) return { error: 'Niet ingelogd', success: false };
+	const userEmail = user.email ?? '';
+
+	const file = formData.get('pdf') as File | null;
+
+	const get = (k: string): string =>
+		((formData.get(k) as string | null) ?? '').trim();
+	const getOrNull = (k: string): string | null => {
+		const v = get(k);
+		return v === '' ? null : v;
+	};
+	const getBool = (k: string): boolean => formData.get(k) === 'Ja';
+
+	// 1. Insert project
+	const { data: project, error: projectError } = await supabase
+		.from('projects')
+		.insert({
+			offerte_nr: get('offerte_nr'),
+			klant_naam: get('klant_naam'),
+			status: get('status') || 'Nieuw',
+			locatie: get('locatie'),
+			datum_opbouw: getOrNull('datum_opbouw'),
+			tijd_opbouw: getOrNull('tijd_opbouw'),
+			eindtijd_opbouw: getOrNull('eindtijd_opbouw'),
+			datum_afbouw: getOrNull('datum_afbouw'),
+			tijd_afbouw: getOrNull('tijd_afbouw'),
+			eindtijd_afbouw: getOrNull('eindtijd_afbouw'),
+			pascal_opbouw: getBool('pascal_opbouw'),
+			pascal_afbouw: getBool('pascal_afbouw'),
+			jip_opbouw: getBool('jip_opbouw'),
+			jip_afbouw: getBool('jip_afbouw'),
+			inhuur_opbouw: get('inhuur_opbouw'),
+			inhuur_afbouw: get('inhuur_afbouw'),
+			laad_datum_opbouw: getOrNull('laad_datum_opbouw'),
+			laad_tijd_opbouw: getOrNull('laad_tijd_opbouw'),
+			laad_datum_afbouw: getOrNull('laad_datum_afbouw'),
+			laad_tijd_afbouw: getOrNull('laad_tijd_afbouw'),
+			notities: get('notities'),
+			seen_by: [userEmail],
+			created_by: userEmail,
+		})
+		.select('id')
+		.single();
+
+	if (projectError || !project) {
+		return {
+			error:
+				'Project aanmaken mislukt: ' +
+				(projectError?.message ?? 'geen data'),
+			success: false,
+		};
+	}
+
+	const projectId = project.id;
+
+	// 2. Insert line items
+	const lineItemsJson = formData.get('line_items_json') as string | null;
+	if (lineItemsJson) {
+		try {
+			const lineItems = JSON.parse(lineItemsJson) as {
+				categorie: string;
+				naam: string;
+				aantal: string;
+			}[];
+			if (lineItems.length > 0) {
+				const rows = lineItems.map((item, idx) => ({
+					project_id: projectId,
+					categorie: item.categorie,
+					naam: item.naam,
+					aantal: item.aantal,
+					sort_order: idx,
+				}));
+				const { error: itemsError } = await supabase
+					.from('line_items')
+					.insert(rows);
+				if (itemsError) {
+					console.error('Failed to insert line items:', itemsError);
+				}
+			}
+		} catch (e) {
+			console.error('Failed to parse line items:', e);
+		}
+	}
+
+	// 3. Upload PDF naar Storage en koppel als project_file
+	if (file && file.size > 0) {
+		const arrayBuffer = await file.arrayBuffer();
+		const safeName = file.name.replace(/[^\w\-.]/g, '_');
+		const storagePath = `${projectId}/${Date.now()}-${safeName}`;
+
+		const { error: uploadError } = await supabase.storage
+			.from('project-files')
+			.upload(storagePath, new Uint8Array(arrayBuffer), {
+				contentType: file.type || 'application/pdf',
+				upsert: false,
+			});
+
+		if (uploadError) {
+			console.error('Failed to upload PDF:', uploadError);
+		} else {
+			const { error: fileEntryError } = await supabase
+				.from('project_files')
+				.insert({
+					project_id: projectId,
+					storage_path: storagePath,
+					file_name: file.name,
+					file_size: file.size,
+					mime_type: file.type || 'application/pdf',
+					uploaded_by: userEmail,
+				});
+			if (fileEntryError) {
+				console.error('Failed to insert project_file:', fileEntryError);
+			}
+		}
+	}
+
+	revalidatePath('/', 'page');
+	return { error: null, success: true };
+}

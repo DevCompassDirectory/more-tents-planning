@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { NewProjectFab } from '@/components/NewProjectFab';
+import { PdfImportFab } from '@/components/PdfImportFab';
 import { getProjects } from '@/lib/projects/queries';
 import { unseenProjects } from '@/lib/projects/seen';
 
@@ -29,6 +30,7 @@ export default async function ProtectedLayout({
 				unreadCount={unread.length}
 			/>
 			{children}
+			<PdfImportFab />
 			<NewProjectFab />
 		</>
 	);
