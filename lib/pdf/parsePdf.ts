@@ -7,14 +7,10 @@ export type ParsedPdfFields = {
 	offerte_nr?: string;
 	klant_naam?: string;
 	locatie?: string;
-	datum_opbouw?: string; // YYYY-MM-DD
-	tijd_opbouw?: string; // HH:MM
+	datum_opbouw?: string;
+	tijd_opbouw?: string;
 	datum_afbouw?: string;
 	tijd_afbouw?: string;
-	pascal_opbouw?: boolean;
-	pascal_afbouw?: boolean;
-	jip_opbouw?: boolean;
-	jip_afbouw?: boolean;
 	line_items: ParsedLineItem[];
 };
 
@@ -24,33 +20,18 @@ export type ParsedLineItem = {
 	aantal: string;
 };
 
-// ----------------------------------------------------------------------------
-// Categorie-mapping: hoe een categorienaam in een offerte vertaald wordt
-// naar onze database-enum. Sleutels zijn altijd lowercase.
-//
-// Drie soorten waardes:
-//   - LineItemCategorie: het item komt onder die categorie
-//   - "skip": deze sectie wordt overgeslagen, geen line items
-//
-// Voeg hier nieuwe categorienamen toe zodra je ze in offertes tegenkomt
-// die nog niet correct geparseerd worden.
-// ----------------------------------------------------------------------------
-
 const CATEGORY_MAP: Record<string, LineItemCategorie | 'skip'> = {
-	// Database categorieën (1-op-1)
 	tenten: 'Tenten',
 	vloeren: 'Vloeren',
 	meubilair: 'Meubilair',
-	meubiliar: 'Meubilair', // bekende typo-variant in Odoo
+	meubiliar: 'Meubilair',
 	verlichting: 'Verlichting',
 	verwarming: 'Verwarming',
 	decoratie: 'Decoratie',
 	overig: 'Overig',
 
-	// Wordt overgeslagen: hoort niet thuis op een pakbon
 	transport: 'skip',
 
-	// Custom categorienamen die naar Overig vallen
 	diensten: 'Overig',
 	glazen: 'Overig',
 	glaswerk: 'Overig',
@@ -64,23 +45,29 @@ const CATEGORY_MAP: Record<string, LineItemCategorie | 'skip'> = {
 	audio: 'Overig',
 };
 
-// ----------------------------------------------------------------------------
-// Hoofdparser
-// ----------------------------------------------------------------------------
-
 export function parsePdfText(text: string): ParsedPdfFields {
 	const result: ParsedPdfFields = { line_items: [] };
 
-	// Offerte nummer (S00117 etc)
-	const offerteMatch =
-		text.match(/Offerte\s*#\s*(S\d+)/i) || text.match(/\b(S\d{4,6})\b/);
-	if (offerteMatch) result.offerte_nr = offerteMatch[1];
+	// Offerte- of ordernummer (S00117 etc)
+	const numberMatch =
+		text.match(/(?:Offerte|Order)\s*#\s*(S\d+)/i) ||
+		text.match(/\b(S\d{4,6})\b/);
+	if (numberMatch) result.offerte_nr = numberMatch[1];
 
-	// Klant naam (na "Factuuradres")
-	const klantMatch = text.match(/Factuuradres\s+(.+?)(?=\s{2,}|\n|$)/);
-	if (klantMatch) result.klant_naam = klantMatch[1].trim();
+	// Klant naam: tussen "Factuuradres" en eerste straat+nummer+postcode
+	// Pattern: <klant> <straatnaam> <huisnummer[letter]> <postcode> <plaats>
+	const klantStrict = text.match(
+		/Factuuradres\s+(.+?)\s+\S+\s+\d+[A-Za-z]?\s+\d{4}\s*[A-Z]{2}/,
+	);
+	if (klantStrict) {
+		result.klant_naam = klantStrict[1].trim();
+	} else {
+		// Fallback: alles tot eerste echte break (oude gedrag)
+		const klantFallback = text.match(/Factuuradres\s+(.+?)(?=\s{2,}|\n|$)/);
+		if (klantFallback) result.klant_naam = klantFallback[1].trim();
+	}
 
-	// Locatie (na "Afleveradres", tot klant naam herhaald)
+	// Locatie: tussen "Afleveradres" en herhaling van klant naam
 	if (result.klant_naam) {
 		const escapedKlant = result.klant_naam.replace(
 			/[.*+?^${}()|[\]\\]/g,
@@ -94,12 +81,12 @@ export function parsePdfText(text: string): ParsedPdfFields {
 	}
 	if (!result.locatie) {
 		const fallback = text.match(
-			/Afleveradres\s+([A-Za-z][^\n]{2,60})(?=\s+\d{4}|\s+[A-Z][a-z]+\s+[A-Z])/,
+			/Afleveradres\s+([A-Za-z][^\n]{2,80})(?=\s+\d{4}|\s+[A-Z][a-z]+\s+[A-Z])/,
 		);
 		if (fallback) result.locatie = fallback[1].trim();
 	}
 
-	// Datum + tijd: zoekt patroon "DD-MM-YYYY HH:MM tot DD-MM-YYYY HH:MM"
+	// Datum + tijd
 	const dateRangePattern =
 		/(\d{2}-\d{2}-\d{4})\s+(\d{2}:\d{2})\s+tot\s+(\d{2}-\d{2}-\d{4})\s+(\d{2}:\d{2})/g;
 	const dateMatches = [...text.matchAll(dateRangePattern)];
@@ -113,36 +100,16 @@ export function parsePdfText(text: string): ParsedPdfFields {
 		result.tijd_afbouw = first[4];
 	}
 
-	// Verkoper naam mappen op personeel (Pascal/Jip)
-	const verkoperMatch = text.match(/Verkoper\s+([A-Z][a-z]+\s+[A-Z][a-z]+)/);
-	if (verkoperMatch) {
-		const naam = verkoperMatch[1].toLowerCase();
-		if (naam.includes('jip')) {
-			result.jip_opbouw = true;
-			result.jip_afbouw = true;
-		}
-		if (naam.includes('pascal')) {
-			result.pascal_opbouw = true;
-			result.pascal_afbouw = true;
-		}
-	}
-
 	result.line_items = parseLineItems(text);
 
 	return result;
 }
 
-// ----------------------------------------------------------------------------
-// Line items parser
-// ----------------------------------------------------------------------------
-
 function parseLineItems(text: string): ParsedLineItem[] {
 	const items: ParsedLineItem[] = [];
 
-	// Stop bij subtotalen
 	const main = text.split(/Excl\.?\s*btw/i)[0];
 
-	// Schoon de tekst op: weg met datum-bereiken, BTW labels en euro bedragen
 	const clean = main
 		.replace(
 			/\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}\s+tot\s+\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}/g,
@@ -152,28 +119,23 @@ function parseLineItems(text: string): ParsedLineItem[] {
 		.replace(/[\d.]+,\d{2}\s*€/g, ' ')
 		.replace(/\s{2,}/g, ' ');
 
-	// Splits op alle bekende categorienamen
 	const catKeys = Object.keys(CATEGORY_MAP);
 	const catRegex = new RegExp(`\\b(${catKeys.join('|')})\\b`, 'gi');
 	const parts = clean.split(catRegex);
 
-	// Items vóór de eerste herkende categorie vallen onder "Overig"
 	let currentCat: LineItemCategorie | 'skip' = 'Overig';
 
 	for (let i = 0; i < parts.length; i++) {
 		const part = parts[i];
 
-		// Is dit een categoriewoord?
 		const lookup = CATEGORY_MAP[part.toLowerCase()];
 		if (lookup) {
 			currentCat = lookup;
 			continue;
 		}
 
-		// Sla items in een "skip" sectie (Transport) volledig over
 		if (currentCat === 'skip') continue;
 
-		// Zoek items in deze part: productnaam gevolgd door "X,XX Stuks"
 		const itemPattern =
 			/([A-Za-z(][\w\s(),.\/-]{3,60}?)\s+(\d+[,.]\d{2})\s+[Ss]tuks/g;
 		let match;
@@ -181,7 +143,6 @@ function parseLineItems(text: string): ParsedLineItem[] {
 			const naam = match[1].trim().replace(/\s+/g, ' ');
 			const aantal = match[2].replace('.', ',') + '\u00a0st';
 			if (naam.length > 3) {
-				// currentCat is hier per definitie geen "skip" meer
 				items.push({
 					categorie: currentCat as LineItemCategorie,
 					naam,
@@ -191,6 +152,5 @@ function parseLineItems(text: string): ParsedLineItem[] {
 		}
 	}
 
-	// Veiligheidsfilter: alleen geldige database categorieën doorlaten
 	return items.filter((it) => LINE_ITEM_CATEGORIES.includes(it.categorie));
 }
