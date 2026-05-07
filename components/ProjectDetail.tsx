@@ -7,9 +7,11 @@ import { formatDate, formatTime } from '@/lib/utils/date';
 export function ProjectDetail({
 	project: p,
 	onClose,
+	onEdit,
 }: {
 	project: Project;
 	onClose: () => void;
+	onEdit: () => void;
 }) {
 	return (
 		<div>
@@ -126,13 +128,58 @@ export function ProjectDetail({
 				</Grid>
 
 				{p.notities && (
-					<div className='mt-4'>
+					<div className='mt-4 mb-4'>
 						<div className='text-xs font-bold uppercase tracking-wider text-charcoal-900/60 mb-1.5'>
 							Notities
 						</div>
 						<div className='text-sm leading-relaxed'>
 							{p.notities}
 						</div>
+					</div>
+				)}
+
+				{p.changes && p.changes.length > 0 && (
+					<div className='bg-orange-50 border border-orange-200 rounded-xl p-4 mt-4'>
+						<div className='text-xs font-bold uppercase tracking-wider text-orange-800 mb-2'>
+							Wijzigingshistorie
+						</div>
+						{p.changes
+							.slice()
+							.reverse()
+							.map((entry, i) => (
+								<div
+									key={i}
+									className='mb-3 pb-3 border-b border-orange-200 last:border-b-0 last:mb-0 last:pb-0'
+								>
+									{entry.changes.map((c, j) => (
+										<div
+											key={j}
+											className='text-sm text-orange-800 mb-1'
+										>
+											<span className='font-medium'>
+												{c.field}:
+											</span>{' '}
+											&ldquo;{c.old}&rdquo; → &ldquo;
+											{c.new}&rdquo;
+										</div>
+									))}
+									{entry.note && (
+										<div className='text-xs text-orange-700 italic mt-1'>
+											&ldquo;{entry.note}&rdquo;
+										</div>
+									)}
+									<div className='text-xs text-orange-700 mt-1'>
+										door {entry.by} op{' '}
+										{new Date(entry.at).toLocaleString(
+											'nl-NL',
+											{
+												dateStyle: 'short',
+												timeStyle: 'short',
+											},
+										)}
+									</div>
+								</div>
+							))}
 					</div>
 				)}
 			</div>
@@ -148,9 +195,8 @@ export function ProjectDetail({
 				<div className='flex-1' />
 				<button
 					type='button'
-					disabled
-					className='px-5 py-2.5 bg-forest-500/40 text-white font-medium rounded-xl cursor-not-allowed'
-					title='Bewerken volgt in de volgende stap'
+					onClick={onEdit}
+					className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-xl transition-colors'
 				>
 					Bewerken
 				</button>

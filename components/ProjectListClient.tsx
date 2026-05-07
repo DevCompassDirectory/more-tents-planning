@@ -4,11 +4,13 @@ import { useState } from 'react';
 import type { Project } from '@/lib/types/database';
 import { Modal } from '@/components/ui/Modal';
 import { ProjectDetail } from '@/components/ProjectDetail';
+import { ProjectForm } from '@/components/ProjectForm';
 import { statusBadgeClasses, statusBorderClasses } from '@/lib/projects/status';
 import { formatDate, formatTime } from '@/lib/utils/date';
 
 export function ProjectListClient({ projects }: { projects: Project[] }) {
 	const [selected, setSelected] = useState<Project | null>(null);
+	const [editing, setEditing] = useState<Project | null>(null);
 
 	if (projects.length === 0) {
 		return (
@@ -45,6 +47,24 @@ export function ProjectListClient({ projects }: { projects: Project[] }) {
 					<ProjectDetail
 						project={selected}
 						onClose={() => setSelected(null)}
+						onEdit={() => {
+							const p = selected;
+							setSelected(null);
+							setEditing(p);
+						}}
+					/>
+				)}
+			</Modal>
+
+			<Modal
+				open={editing !== null}
+				onClose={() => setEditing(null)}
+				title='Project bewerken'
+			>
+				{editing && (
+					<ProjectForm
+						initialProject={editing}
+						onClose={() => setEditing(null)}
 					/>
 				)}
 			</Modal>
