@@ -36,7 +36,7 @@ export function Modal({
 			}}
 		>
 			<div className='bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden'>
-				<div className='px-7 py-5 border-b border-cream-300 flex items-center justify-between flex-shrink-0'>
+				<div className='px-7 py-5 border-b border-cream-300 flex items-center justify-between shrink-0'>
 					<div className='font-display text-2xl'>{title}</div>
 					<button
 						type='button'

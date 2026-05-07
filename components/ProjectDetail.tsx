@@ -258,7 +258,7 @@ function CrewIndicator({
 	return (
 		<div className='flex items-center gap-2 text-sm mb-1'>
 			<span
-				className={`w-2 h-2 rounded-full flex-shrink-0 ${
+				className={`w-2 h-2 rounded-full shrink-0 ${
 					present ? 'bg-forest-500' : 'bg-gray-300'
 				}`}
 			/>
