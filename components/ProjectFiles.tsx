@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { UpdateFromPdfModal } from '@/components/UpdateFromPdfModal';
+import type { Project } from '@/lib/types/database';
 
 type ProjectFile = {
 	id: string;
@@ -12,11 +14,12 @@ type ProjectFile = {
 	uploaded_by: string | null;
 };
 
-export function ProjectFiles({ projectId }: { projectId: string }) {
+export function ProjectFiles({ project }: { project: Project }) {
 	const [files, setFiles] = useState<ProjectFile[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [uploading, setUploading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [modalOpen, setModalOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const loadFiles = useCallback(async () => {
@@ -24,14 +27,14 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
 		const { data, error } = await supabase
 			.from('project_files')
 			.select('*')
-			.eq('project_id', projectId)
+			.eq('project_id', project.id)
 			.order('uploaded_at', { ascending: false });
 		if (error) {
 			setError('Documenten laden mislukt: ' + error.message);
 			return;
 		}
 		setFiles(data ?? []);
-	}, [projectId]);
+	}, [project.id]);
 
 	useEffect(() => {
 		setLoading(true);
@@ -53,56 +56,22 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
 		window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
 	}
 
-	async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-		const file = e.target.files?.[0];
+	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const f = e.target.files?.[0];
 		e.target.value = '';
-		if (!file) return;
+		if (!f) return;
+		setSelectedFile(f);
+		setModalOpen(true);
+	}
 
-		setUploading(true);
-		setError(null);
-		try {
-			const supabase = createClient();
-			const {
-				data: { user },
-			} = await supabase.auth.getUser();
-			if (!user) {
-				setError('Niet ingelogd');
-				return;
-			}
+	function handleModalClose() {
+		setModalOpen(false);
+		setSelectedFile(null);
+	}
 
-			const safeName = file.name.replace(/[^\w\-.]/g, '_');
-			const storagePath = `${projectId}/${Date.now()}-${safeName}`;
-
-			const { error: uploadError } = await supabase.storage
-				.from('project-files')
-				.upload(storagePath, file, {
-					contentType: file.type || 'application/pdf',
-					upsert: false,
-				});
-			if (uploadError) {
-				setError('Upload mislukt: ' + uploadError.message);
-				return;
-			}
-
-			const { error: insertError } = await supabase
-				.from('project_files')
-				.insert({
-					project_id: projectId,
-					storage_path: storagePath,
-					file_name: file.name,
-					file_size: file.size,
-					mime_type: file.type || 'application/pdf',
-					uploaded_by: user.email ?? '',
-				});
-			if (insertError) {
-				setError('Bestand registreren mislukt: ' + insertError.message);
-				return;
-			}
-
-			await loadFiles();
-		} finally {
-			setUploading(false);
-		}
+	async function handleSuccess() {
+		handleModalClose();
+		await loadFiles();
 	}
 
 	return (
@@ -121,10 +90,9 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
 				<button
 					type='button'
 					onClick={() => fileInputRef.current?.click()}
-					disabled={uploading}
-					className='text-xs px-3 py-1.5 bg-forest-500 hover:bg-forest-600 disabled:opacity-60 text-white rounded-lg font-medium transition-colors'
+					className='text-xs px-3 py-1.5 bg-forest-500 hover:bg-forest-600 text-white rounded-lg font-medium transition-colors'
 				>
-					{uploading ? 'Uploaden...' : '+ PDF toevoegen'}
+					+ PDF toevoegen
 				</button>
 			</div>
 
@@ -180,6 +148,14 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
 					))}
 				</div>
 			)}
+
+			<UpdateFromPdfModal
+				project={project}
+				file={selectedFile}
+				open={modalOpen}
+				onClose={handleModalClose}
+				onSuccess={handleSuccess}
+			/>
 		</div>
 	);
 }

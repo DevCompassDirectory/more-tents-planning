@@ -175,7 +175,7 @@ export function ProjectDetail({
 					)}
 
 					<div className='mt-4'>
-						<ProjectFiles projectId={p.id} />
+						<ProjectFiles project={p} />
 					</div>
 
 					{p.changes && p.changes.length > 0 && (

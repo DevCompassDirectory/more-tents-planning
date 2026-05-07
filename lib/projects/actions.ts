@@ -456,3 +456,200 @@ export async function updateLineItems(
 	revalidatePath('/', 'page');
 	return { error: null, success: true };
 }
+
+export async function updateProjectFromPdf(
+	projectId: string,
+	formData: FormData,
+): Promise<{ error: string | null; success: boolean }> {
+	const supabase = await createClient();
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+	if (!user) return { error: 'Niet ingelogd', success: false };
+	const userEmail = user.email ?? '';
+
+	const file = formData.get('pdf') as File | null;
+	if (!file) return { error: 'Geen PDF bestand', success: false };
+
+	const { data: current, error: fetchErr } = await supabase
+		.from('projects')
+		.select('*')
+		.eq('id', projectId)
+		.single();
+	if (fetchErr || !current) {
+		return { error: 'Project niet gevonden', success: false };
+	}
+
+	const note = ((formData.get('note') as string | null) ?? '').trim();
+
+	// Alleen velden die expliciet in formData zitten worden meegenomen
+	const PDF_FIELDS = [
+		'offerte_nr',
+		'klant_naam',
+		'locatie',
+		'datum_opbouw',
+		'tijd_opbouw',
+		'datum_afbouw',
+		'tijd_afbouw',
+	] as const;
+
+	const FIELD_LABELS: Record<string, string> = {
+		offerte_nr: 'Offerte nr',
+		klant_naam: 'Klant naam',
+		locatie: 'Locatie',
+		datum_opbouw: 'Datum opbouw',
+		tijd_opbouw: 'Tijd opbouw',
+		datum_afbouw: 'Datum afbouw',
+		tijd_afbouw: 'Tijd afbouw',
+	};
+
+	const updateData: Record<string, unknown> = {};
+	const diffs: { field: string; old: string; new: string }[] = [];
+
+	for (const key of PDF_FIELDS) {
+		if (!formData.has(key)) continue;
+		const raw = ((formData.get(key) as string | null) ?? '').trim();
+		const newVal: string | null = raw === '' ? null : raw;
+
+		let oldVal = (current as Record<string, unknown>)[key];
+
+		// Tijden uit Postgres komen als HH:MM:SS, normaliseer voor compare
+		if (key.startsWith('tijd_') && typeof oldVal === 'string') {
+			oldVal = oldVal.slice(0, 5);
+		}
+
+		const oldNorm = oldVal === null || oldVal === undefined ? '' : oldVal;
+		const newNorm = newVal === null ? '' : newVal;
+
+		if (oldNorm !== newNorm) {
+			updateData[key] = newVal;
+			diffs.push({
+				field: FIELD_LABELS[key],
+				old: oldNorm === '' ? '—' : String(oldVal),
+				new: newNorm === '' ? '—' : newVal!,
+			});
+		}
+	}
+
+	// Line items vervangen indien meegestuurd
+	const lineItemsJson = formData.get('line_items_json') as string | null;
+	if (lineItemsJson) {
+		try {
+			const newItems = JSON.parse(lineItemsJson) as {
+				categorie: string;
+				naam: string;
+				aantal: string;
+			}[];
+
+			const { count: oldCount } = await supabase
+				.from('line_items')
+				.select('*', { count: 'exact', head: true })
+				.eq('project_id', projectId);
+
+			const { error: deleteErr } = await supabase
+				.from('line_items')
+				.delete()
+				.eq('project_id', projectId);
+			if (deleteErr) {
+				return {
+					error:
+						'Oude artikelen verwijderen mislukt: ' +
+						deleteErr.message,
+					success: false,
+				};
+			}
+
+			if (newItems.length > 0) {
+				const rows = newItems.map((item, idx) => ({
+					project_id: projectId,
+					categorie: item.categorie,
+					naam: item.naam,
+					aantal: item.aantal,
+					sort_order: idx,
+				}));
+				const { error: insertErr } = await supabase
+					.from('line_items')
+					.insert(rows);
+				if (insertErr) {
+					return {
+						error:
+							'Nieuwe artikelen opslaan mislukt: ' +
+							insertErr.message,
+						success: false,
+					};
+				}
+			}
+
+			diffs.push({
+				field: 'Artikelen',
+				old: `${oldCount ?? 0} artikelen`,
+				new: `${newItems.length} artikelen`,
+			});
+		} catch (e) {
+			console.error('Failed to update line items:', e);
+		}
+	}
+
+	// Wijzigingshistorie aanvullen
+	if (diffs.length > 0) {
+		const noteWithSource = note
+			? `${note} (via nieuwe PDF: ${file.name})`
+			: `Bijgewerkt via nieuwe PDF: ${file.name}`;
+		const changeEntry = {
+			changes: diffs,
+			note: noteWithSource,
+			by: userEmail,
+			at: new Date().toISOString(),
+		};
+		const existing = Array.isArray(current.changes) ? current.changes : [];
+		updateData.changes = [...existing, changeEntry];
+		updateData.seen_by = [userEmail];
+	}
+
+	if (Object.keys(updateData).length > 0) {
+		const { error: updateErr } = await supabase
+			.from('projects')
+			.update(updateData)
+			.eq('id', projectId);
+		if (updateErr) {
+			return {
+				error: 'Project bijwerken mislukt: ' + updateErr.message,
+				success: false,
+			};
+		}
+	}
+
+	// PDF uploaden en koppelen
+	const arrayBuffer = await file.arrayBuffer();
+	const safeName = file.name.replace(/[^\w\-.]/g, '_');
+	const storagePath = `${projectId}/${Date.now()}-${safeName}`;
+	const { error: uploadErr } = await supabase.storage
+		.from('project-files')
+		.upload(storagePath, new Uint8Array(arrayBuffer), {
+			contentType: file.type || 'application/pdf',
+			upsert: false,
+		});
+	if (uploadErr) {
+		return {
+			error: 'PDF uploaden mislukt: ' + uploadErr.message,
+			success: false,
+		};
+	}
+
+	const { error: fileEntryErr } = await supabase
+		.from('project_files')
+		.insert({
+			project_id: projectId,
+			storage_path: storagePath,
+			file_name: file.name,
+			file_size: file.size,
+			mime_type: file.type || 'application/pdf',
+			uploaded_by: userEmail,
+		});
+	if (fileEntryErr) {
+		console.error('Failed to insert project_file:', fileEntryErr);
+	}
+
+	revalidatePath('/', 'page');
+	return { error: null, success: true };
+}
