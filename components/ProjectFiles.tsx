@@ -12,12 +12,14 @@ type ProjectFile = {
 	storage_path: string;
 	uploaded_at: string;
 	uploaded_by: string | null;
+	mime_type: string | null;
 };
 
 export function ProjectFiles({ project }: { project: Project }) {
 	const [files, setFiles] = useState<ProjectFile[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [deleting, setDeleting] = useState<string | null>(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +56,66 @@ export function ProjectFiles({ project }: { project: Project }) {
 			return;
 		}
 		window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+	}
+
+	async function downloadAsFile(pf: ProjectFile): Promise<File | null> {
+		const supabase = createClient();
+		const { data, error } = await supabase.storage
+			.from('project-files')
+			.download(pf.storage_path);
+		if (error || !data) {
+			console.error('Download mislukt:', error);
+			return null;
+		}
+		return new File([data], pf.file_name, {
+			type: pf.mime_type ?? 'application/pdf',
+		});
+	}
+
+	async function handleDelete(file: ProjectFile, idx: number) {
+		const isTop = idx === 0;
+		const nextFile = isTop && files.length > 1 ? files[1] : null;
+
+		const message = nextFile
+			? `PDF "${file.file_name}" verwijderen? Daarna wordt het project vergeleken met "${nextFile.file_name}" zodat je kunt kiezen welke velden je terugzet.`
+			: `PDF "${file.file_name}" verwijderen?`;
+
+		if (!window.confirm(message)) return;
+
+		setDeleting(file.id);
+		setError(null);
+
+		try {
+			const supabase = createClient();
+
+			const { error: storageErr } = await supabase.storage
+				.from('project-files')
+				.remove([file.storage_path]);
+			if (storageErr) {
+				console.error('Storage verwijderen gaf fout:', storageErr);
+			}
+
+			const { error: dbErr } = await supabase
+				.from('project_files')
+				.delete()
+				.eq('id', file.id);
+			if (dbErr) {
+				setError('Verwijderen mislukt: ' + dbErr.message);
+				return;
+			}
+
+			await loadFiles();
+
+			if (nextFile) {
+				const downloaded = await downloadAsFile(nextFile);
+				if (downloaded) {
+					setSelectedFile(downloaded);
+					setModalOpen(true);
+				}
+			}
+		} finally {
+			setDeleting(null);
+		}
 	}
 
 	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -113,38 +175,54 @@ export function ProjectFiles({ project }: { project: Project }) {
 			) : (
 				<div className='space-y-2'>
 					{files.map((file, idx) => (
-						<button
+						<div
 							key={file.id}
-							type='button'
-							onClick={() => handleOpen(file.storage_path)}
-							className='w-full text-left bg-white hover:bg-forest-50 border border-cream-300 hover:border-forest-500 rounded-xl px-4 py-3 transition-colors flex items-center gap-3 group'
+							className='flex bg-white border border-cream-300 rounded-xl overflow-hidden transition-colors'
 						>
-							<span className='text-2xl flex-shrink-0'>📄</span>
-							<div className='flex-1 min-w-0'>
-								<div className='flex items-center gap-2 flex-wrap'>
-									<span className='text-sm font-medium text-charcoal-900 truncate'>
-										{file.file_name}
-									</span>
-									{idx === 0 && files.length > 1 && (
-										<span className='text-[10px] bg-forest-50 text-forest-600 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider'>
-											Laatst toegevoegd
+							<button
+								type='button'
+								onClick={() => handleOpen(file.storage_path)}
+								className='flex-1 flex items-center gap-3 px-4 py-3 hover:bg-forest-50 transition-colors text-left min-w-0 group'
+							>
+								<span className='text-2xl flex-shrink-0'>
+									📄
+								</span>
+								<div className='flex-1 min-w-0'>
+									<div className='flex items-center gap-2 flex-wrap'>
+										<span className='text-sm font-medium text-charcoal-900 truncate'>
+											{file.file_name}
 										</span>
-									)}
+										{idx === 0 && files.length > 1 && (
+											<span className='text-[10px] bg-forest-50 text-forest-600 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider'>
+												Laatst toegevoegd
+											</span>
+										)}
+									</div>
+									<div className='text-xs text-charcoal-900/60 mt-0.5'>
+										{formatDateTime(file.uploaded_at)}
+										{file.file_size
+											? ` • ${formatBytes(file.file_size)}`
+											: ''}
+										{file.uploaded_by
+											? ` • ${file.uploaded_by}`
+											: ''}
+									</div>
 								</div>
-								<div className='text-xs text-charcoal-900/60 mt-0.5'>
-									{formatDateTime(file.uploaded_at)}
-									{file.file_size
-										? ` • ${formatBytes(file.file_size)}`
-										: ''}
-									{file.uploaded_by
-										? ` • ${file.uploaded_by}`
-										: ''}
-								</div>
-							</div>
-							<span className='text-xs text-forest-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0'>
-								Open →
-							</span>
-						</button>
+								<span className='text-xs text-forest-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0'>
+									Open →
+								</span>
+							</button>
+							<button
+								type='button'
+								onClick={() => handleDelete(file, idx)}
+								disabled={deleting === file.id}
+								className='px-4 border-l border-cream-300 hover:bg-red-50 text-red-700 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-wait text-sm'
+								title='Verwijder PDF'
+								aria-label='Verwijder PDF'
+							>
+								{deleting === file.id ? '...' : '🗑'}
+							</button>
+						</div>
 					))}
 				</div>
 			)}
