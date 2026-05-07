@@ -1,5 +1,6 @@
 import { Tabs } from '@/components/Tabs';
 import { ProjectList } from '@/components/ProjectList';
+import { CalendarView } from '@/components/CalendarView';
 import { createClient } from '@/lib/supabase/server';
 import { getProjects } from '@/lib/projects/queries';
 import { unseenProjects } from '@/lib/projects/seen';
@@ -25,11 +26,7 @@ export default async function Home({
 			<Tabs active={activeTab} />
 			<main className='max-w-6xl mx-auto px-6 py-8'>
 				{unread.length > 0 && <UnseenBanner projects={unread} />}
-				{activeTab === 'kalender' ? (
-					<CalendarPlaceholder />
-				) : (
-					<ProjectList />
-				)}
+				{activeTab === 'kalender' ? <CalendarView /> : <ProjectList />}
 			</main>
 		</>
 	);
@@ -55,19 +52,6 @@ function UnseenBanner({ projects }: { projects: Project[] }) {
 					</div>
 				))}
 			</div>
-		</div>
-	);
-}
-
-function CalendarPlaceholder() {
-	return (
-		<div className='bg-white rounded-2xl border border-cream-300 p-16 text-center'>
-			<div className='font-display text-2xl text-forest-500 mb-2'>
-				Kalender
-			</div>
-			<p className='text-sm text-charcoal-900/60'>
-				Hier komt de maandkalender met op- en afbouw events.
-			</p>
 		</div>
 	);
 }
