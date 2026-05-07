@@ -1,13 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import type { Project } from '@/lib/types/database';
+import {
+	PROJECT_STATUSES,
+	type Project,
+	type ProjectStatus,
+} from '@/lib/types/database';
 import { Modal } from '@/components/ui/Modal';
 import { ProjectDetail } from '@/components/ProjectDetail';
 import { ProjectForm } from '@/components/ProjectForm';
 import { statusBadgeClasses, statusBorderClasses } from '@/lib/projects/status';
 import { formatDate, formatTime } from '@/lib/utils/date';
 import { isUnseen } from '@/lib/projects/seen';
+
+type FilterValue = 'alle' | 'ongelezen' | ProjectStatus;
 
 export function ProjectListClient({
 	projects,
@@ -18,6 +24,51 @@ export function ProjectListClient({
 }) {
 	const [selected, setSelected] = useState<Project | null>(null);
 	const [editing, setEditing] = useState<Project | null>(null);
+
+	const [search, setSearch] = useState('');
+	const [dateFrom, setDateFrom] = useState('');
+	const [dateTo, setDateTo] = useState('');
+	const [filter, setFilter] = useState<FilterValue>('alle');
+
+	const unreadCount = projects.filter((p) =>
+		isUnseen(p, currentUserEmail),
+	).length;
+
+	const filtered = projects.filter((p) => {
+		if (filter === 'ongelezen') {
+			if (!isUnseen(p, currentUserEmail)) return false;
+		} else if (filter !== 'alle') {
+			if (p.status !== filter) return false;
+		}
+
+		if (search.trim()) {
+			const q = search.trim().toLowerCase();
+			const klant = (p.klant_naam ?? '').toLowerCase();
+			const offerte = (p.offerte_nr ?? '').toLowerCase();
+			if (!klant.includes(q) && !offerte.includes(q)) return false;
+		}
+
+		if (dateFrom || dateTo) {
+			if (!p.datum_opbouw) return false;
+			if (dateFrom && p.datum_opbouw < dateFrom) return false;
+			if (dateTo && p.datum_opbouw > dateTo) return false;
+		}
+
+		return true;
+	});
+
+	const hasActiveFilters =
+		search.trim() !== '' ||
+		dateFrom !== '' ||
+		dateTo !== '' ||
+		filter !== 'alle';
+
+	function resetFilters() {
+		setSearch('');
+		setDateFrom('');
+		setDateTo('');
+		setFilter('alle');
+	}
 
 	if (projects.length === 0) {
 		return (
@@ -35,16 +86,107 @@ export function ProjectListClient({
 
 	return (
 		<>
-			<div className='space-y-3'>
-				{projects.map((p) => (
-					<ProjectCard
-						key={p.id}
-						project={p}
-						unseen={isUnseen(p, currentUserEmail)}
-						onClick={() => setSelected(p)}
-					/>
-				))}
+			<div className='space-y-3 mb-5'>
+				<div className='flex flex-wrap gap-3'>
+					<div className='flex-1 min-w-[220px]'>
+						<input
+							type='text'
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder='Zoek op klant of offerte nr...'
+							className='w-full px-4 py-2.5 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+						/>
+					</div>
+					<div className='flex items-center gap-2'>
+						<input
+							type='date'
+							value={dateFrom}
+							onChange={(e) => setDateFrom(e.target.value)}
+							aria-label='Datum vanaf'
+							className='px-3 py-2.5 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+						/>
+						<span className='text-charcoal-900/40'>–</span>
+						<input
+							type='date'
+							value={dateTo}
+							onChange={(e) => setDateTo(e.target.value)}
+							aria-label='Datum tot'
+							className='px-3 py-2.5 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+						/>
+					</div>
+				</div>
+
+				<div className='flex flex-wrap gap-2 items-center'>
+					<FilterChip
+						active={filter === 'alle'}
+						onClick={() => setFilter('alle')}
+					>
+						Alle
+					</FilterChip>
+					<FilterChip
+						active={filter === 'ongelezen'}
+						onClick={() => setFilter('ongelezen')}
+						amber
+					>
+						⚠ Ongelezen{unreadCount > 0 ? ` (${unreadCount})` : ''}
+					</FilterChip>
+					<span className='w-px h-5 bg-cream-300 mx-1' />
+					{PROJECT_STATUSES.map((s) => (
+						<FilterChip
+							key={s}
+							active={filter === s}
+							onClick={() => setFilter(s)}
+						>
+							{s}
+						</FilterChip>
+					))}
+				</div>
+
+				{hasActiveFilters && (
+					<div className='flex items-center justify-between text-xs text-charcoal-900/60'>
+						<span>
+							{filtered.length} van {projects.length} project
+							{projects.length === 1 ? '' : 'en'}
+						</span>
+						<button
+							type='button'
+							onClick={resetFilters}
+							className='text-forest-500 hover:text-forest-600 font-medium'
+						>
+							Filters wissen
+						</button>
+					</div>
+				)}
 			</div>
+
+			{filtered.length === 0 ? (
+				<div className='bg-white rounded-2xl border border-cream-300 p-12 text-center'>
+					<div className='font-display text-xl text-forest-500 mb-2'>
+						Geen projecten gevonden
+					</div>
+					<p className='text-sm text-charcoal-900/60 mb-4'>
+						Geen enkel project voldoet aan deze filters.
+					</p>
+					<button
+						type='button'
+						onClick={resetFilters}
+						className='px-4 py-2 bg-forest-500 hover:bg-forest-600 text-white text-sm font-medium rounded-full transition-colors'
+					>
+						Filters wissen
+					</button>
+				</div>
+			) : (
+				<div className='space-y-3'>
+					{filtered.map((p) => (
+						<ProjectCard
+							key={p.id}
+							project={p}
+							unseen={isUnseen(p, currentUserEmail)}
+							onClick={() => setSelected(p)}
+						/>
+					))}
+				</div>
+			)}
 
 			<Modal
 				open={selected !== null}
@@ -78,6 +220,36 @@ export function ProjectListClient({
 				)}
 			</Modal>
 		</>
+	);
+}
+
+function FilterChip({
+	active,
+	onClick,
+	amber,
+	children,
+}: {
+	active: boolean;
+	onClick: () => void;
+	amber?: boolean;
+	children: React.ReactNode;
+}) {
+	const base =
+		'px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors border whitespace-nowrap';
+	const states = active
+		? amber
+			? 'bg-amber-500 border-amber-500 text-white'
+			: 'bg-forest-500 border-forest-500 text-white'
+		: 'bg-white border-cream-300 text-charcoal-900/70 hover:text-charcoal-900 hover:border-charcoal-900/30';
+
+	return (
+		<button
+			type='button'
+			onClick={onClick}
+			className={`${base} ${states}`}
+		>
+			{children}
+		</button>
 	);
 }
 
