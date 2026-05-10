@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getProjects } from '@/lib/projects/queries';
 import { unseenProjects } from '@/lib/projects/seen';
 import type { Project } from '@/lib/types/database';
+import { parseCalendarView, parseCalendarDate } from '@/lib/planning/calendar';
 
 type Tab = 'kalender' | 'lijst' | 'print';
 
@@ -18,11 +19,12 @@ function parseTab(value: string | undefined): Tab {
 export default async function Home({
 	searchParams,
 }: {
-	searchParams: Promise<{ tab?: string }>;
+	searchParams: Promise<{ tab?: string; view?: string; date?: string }>;
 }) {
 	const params = await searchParams;
 	const activeTab = parseTab(params.tab);
-
+	const calendarView = parseCalendarView(params.view);
+	const calendarDate = parseCalendarDate(params.date);
 	const supabase = await createClient();
 	const {
 		data: { user },
@@ -37,7 +39,12 @@ export default async function Home({
 				{activeTab !== 'print' && unread.length > 0 && (
 					<UnseenBanner projects={unread} />
 				)}
-				{activeTab === 'kalender' && <CalendarView />}
+				{activeTab === 'kalender' && (
+					<CalendarView
+						view={calendarView}
+						date={calendarDate}
+					/>
+				)}
 				{activeTab === 'lijst' && <ProjectList />}
 				{activeTab === 'print' && <PrintView />}
 			</main>
