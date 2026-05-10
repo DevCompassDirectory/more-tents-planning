@@ -7,11 +7,18 @@ import { getProjects } from '@/lib/projects/queries';
 import { unseenProjects } from '@/lib/projects/seen';
 import type { Project } from '@/lib/types/database';
 import { parseCalendarView, parseCalendarDate } from '@/lib/planning/calendar';
+import { GanttView } from '@/components/GanttView';
+import {
+	parseGanttView,
+	parseGanttDate,
+	parseGanttStatussen,
+} from '@/lib/planning/gantt';
 
-type Tab = 'kalender' | 'lijst' | 'print';
+type Tab = 'kalender' | 'lijst' | 'gantt' | 'print';
 
 function parseTab(value: string | undefined): Tab {
 	if (value === 'lijst') return 'lijst';
+	if (value === 'gantt') return 'gantt';
 	if (value === 'print') return 'print';
 	return 'kalender';
 }
@@ -19,12 +26,20 @@ function parseTab(value: string | undefined): Tab {
 export default async function Home({
 	searchParams,
 }: {
-	searchParams: Promise<{ tab?: string; view?: string; date?: string }>;
+	searchParams: Promise<{
+		tab?: string;
+		view?: string;
+		date?: string;
+		status?: string;
+	}>;
 }) {
 	const params = await searchParams;
 	const activeTab = parseTab(params.tab);
 	const calendarView = parseCalendarView(params.view);
 	const calendarDate = parseCalendarDate(params.date);
+	const ganttView = parseGanttView(params.view);
+	const ganttDate = parseGanttDate(params.date);
+	const ganttStatussen = parseGanttStatussen(params.status);
 	const supabase = await createClient();
 	const {
 		data: { user },
@@ -47,6 +62,13 @@ export default async function Home({
 				)}
 				{activeTab === 'lijst' && <ProjectList />}
 				{activeTab === 'print' && <PrintView />}
+				{activeTab === 'gantt' && (
+					<GanttView
+						view={ganttView}
+						date={ganttDate}
+						statussen={ganttStatussen}
+					/>
+				)}
 			</main>
 		</>
 	);
