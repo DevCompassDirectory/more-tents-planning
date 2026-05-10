@@ -14,6 +14,7 @@ import {
 } from '@/lib/planning/print';
 import { PrintFormatA } from '@/components/PrintFormatA';
 import { PrintFormatB } from '@/components/PrintFormatB';
+import { PrintFormatC } from '@/components/PrintFormatC';
 
 type FormatId = 'a' | 'b' | 'c';
 
@@ -90,11 +91,10 @@ export function PrintViewClient({ projects }: { projects: Project[] }) {
 						B: Compacte tabel
 					</FormatChip>
 					<FormatChip
-						active={false}
-						disabled
-						onClick={() => {}}
+						active={format === 'c'}
+						onClick={() => setFormat('c')}
 					>
-						C: Crew rooster (binnenkort)
+						C: Crew rooster
 					</FormatChip>
 				</div>
 
@@ -134,6 +134,15 @@ export function PrintViewClient({ projects }: { projects: Project[] }) {
 				)}
 				{format === 'b' && (
 					<PrintFormatB
+						groups={groups}
+						from={from}
+						to={to}
+						statussen={statussen}
+						total={total}
+					/>
+				)}
+				{format === 'c' && (
+					<PrintFormatC
 						groups={groups}
 						from={from}
 						to={to}
