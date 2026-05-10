@@ -53,7 +53,7 @@ export function CalendarMonthView({
 
 	return (
 		<>
-			<div className='hidden md:block bg-white rounded-2xl border border-cream-300 overflow-hidden shadow-sm'>
+			<div className='hidden md:block bg-white rounded-lg border border-cream-300 overflow-hidden shadow-sm'>
 				<div className='grid grid-cols-7 bg-forest-500 text-white'>
 					{DAYS_FULL.map((d) => (
 						<div
@@ -176,7 +176,7 @@ function MobileMiniGrid({
 	onSelectDay: (iso: string) => void;
 }) {
 	return (
-		<div className='bg-white rounded-2xl border border-cream-300 p-3 shadow-sm'>
+		<div className='bg-white rounded-lg border border-cream-300 p-3 shadow-sm'>
 			<div className='grid grid-cols-7 text-[10px] text-charcoal-900/50 text-center mb-1.5'>
 				{DAYS_MINI.map((d, i) => (
 					<div key={i}>{d}</div>
@@ -249,7 +249,7 @@ function MobileWeekSections({
 			{weeks.map((wk) => (
 				<section
 					key={wk.weekNr}
-					className='bg-white rounded-2xl border border-cream-300 px-3 py-2.5 shadow-sm'
+					className='bg-white rounded-lg border border-cream-300 px-3 py-2.5 shadow-sm'
 				>
 					<header className='flex justify-between items-baseline pb-2 border-b border-cream-300 mb-2'>
 						<span className='text-xs font-semibold text-forest-500'>
@@ -269,7 +269,7 @@ function MobileWeekSections({
 								<div
 									key={cell.iso}
 									id={`mobile-day-${cell.iso}`}
-									className={`grid items-start gap-2 px-2 py-1 rounded-md ${
+									className={`grid items-start gap-2 px-2 py-1 rounded-lg ${
 										isSelected
 											? 'bg-paper-50 border-l-2 border-forest-500'
 											: ''
@@ -289,7 +289,7 @@ function MobileWeekSections({
 										<div
 											className={`text-sm font-medium ${
 												isToday && cell.inMonth
-													? 'inline-flex items-center justify-center w-6 h-6 rounded-full bg-forest-500 text-white'
+													? 'inline-flex items-center justify-center w-6 h-6 rounded-lg bg-forest-500 text-white'
 													: isSelected
 														? 'text-forest-500'
 														: cell.inMonth

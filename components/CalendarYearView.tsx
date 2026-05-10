@@ -21,7 +21,7 @@ export function CalendarYearView({ date, projects }: Props) {
 	const todayISO = todayDate();
 
 	return (
-		<div className='bg-white rounded-2xl border border-cream-300 p-4 sm:p-6 shadow-sm'>
+		<div className='bg-white rounded-lg border border-cream-300 p-4 sm:p-6 shadow-sm'>
 			<div className='grid grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6'>
 				{months.map(({ year, month }) => (
 					<YearMonth
@@ -107,7 +107,7 @@ function YearDay({
 		<Link
 			href={calendarHref('maand', cell.iso)}
 			title={eventLabel}
-			className={`block aspect-square rounded-sm transition-opacity hover:opacity-80 ${bg} ${
+			className={`block aspect-square rounded-lg transition-opacity hover:opacity-80 ${bg} ${
 				isToday && cell.inMonth ? 'ring-1 ring-forest-500' : ''
 			}`}
 		/>
@@ -119,23 +119,23 @@ function Legend() {
 		<div className='flex flex-wrap items-center gap-3 mt-5 text-[11px] text-charcoal-900/60'>
 			<span>Drukte:</span>
 			<span className='flex items-center gap-1'>
-				<span className='inline-block w-3 h-3 rounded-sm bg-paper-50 border border-cream-300' />
+				<span className='inline-block w-3 h-3 rounded-lg bg-paper-50 border border-cream-300' />
 				geen
 			</span>
 			<span className='flex items-center gap-1'>
-				<span className='inline-block w-3 h-3 rounded-sm bg-green-200' />
+				<span className='inline-block w-3 h-3 rounded-lg bg-green-200' />
 				1 event
 			</span>
 			<span className='flex items-center gap-1'>
-				<span className='inline-block w-3 h-3 rounded-sm bg-green-500' />
+				<span className='inline-block w-3 h-3 rounded-lg bg-green-500' />
 				2 events
 			</span>
 			<span className='flex items-center gap-1'>
-				<span className='inline-block w-3 h-3 rounded-sm bg-green-700' />
+				<span className='inline-block w-3 h-3 rounded-lg bg-green-700' />
 				3+
 			</span>
 			<span className='flex items-center gap-1'>
-				<span className='inline-block w-3 h-3 rounded-sm bg-amber-200' />
+				<span className='inline-block w-3 h-3 rounded-lg bg-amber-200' />
 				afbouw
 			</span>
 		</div>

@@ -46,7 +46,7 @@ export function CalendarEventButton({
 			type='button'
 			onClick={onClick}
 			title={event.project.klant_naam || 'naamloos'}
-			className={`relative block w-full text-left rounded font-medium hover:opacity-80 transition-opacity ${SIZE_CLASSES[size]} ${STYLES[event.type]}`}
+			className={`relative block w-full text-left rounded-lg font-medium hover:opacity-80 transition-opacity ${SIZE_CLASSES[size]} ${STYLES[event.type]}`}
 		>
 			<span className='block truncate'>{labelFor(event)}</span>
 			{unseen && (

@@ -23,7 +23,7 @@ export function CalendarQuarterView({ date, projects }: Props) {
 	const todayISO = todayDate();
 
 	return (
-		<div className='bg-white rounded-2xl border border-cream-300 p-4 sm:p-6 shadow-sm'>
+		<div className='bg-white rounded-lg border border-cream-300 p-4 sm:p-6 shadow-sm'>
 			<div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
 				{months.map(({ year, month }) => (
 					<MiniMonth
@@ -111,7 +111,7 @@ function MiniDay({
 	return (
 		<Link
 			href={calendarHref('maand', cell.iso)}
-			className={`aspect-square flex items-center justify-center text-xs rounded-md transition-opacity hover:opacity-80 ${bg} ${textColor} ${
+			className={`aspect-square flex items-center justify-center text-xs rounded-lg transition-opacity hover:opacity-80 ${bg} ${textColor} ${
 				isToday && cell.inMonth
 					? 'ring-1 ring-forest-500 ring-inset'
 					: ''
@@ -126,11 +126,11 @@ function Legend() {
 	return (
 		<div className='flex flex-wrap gap-3 mt-4 text-[11px] text-charcoal-900/60'>
 			<span className='flex items-center gap-1'>
-				<span className='inline-block w-3 h-3 rounded bg-green-100 border border-green-200' />
+				<span className='inline-block w-3 h-3 rounded-lg bg-green-100 border border-green-200' />
 				Opbouw
 			</span>
 			<span className='flex items-center gap-1'>
-				<span className='inline-block w-3 h-3 rounded bg-amber-100 border border-amber-200' />
+				<span className='inline-block w-3 h-3 rounded-lg bg-amber-100 border border-amber-200' />
 				Afbouw
 			</span>
 		</div>

@@ -45,7 +45,7 @@ export function CalendarWeekView({
 	return (
 		<>
 			{/* Desktop: 7 kolommen */}
-			<div className='hidden md:block bg-white rounded-2xl border border-cream-300 overflow-hidden shadow-sm'>
+			<div className='hidden md:block bg-white rounded-lg border border-cream-300 overflow-hidden shadow-sm'>
 				<div className='grid grid-cols-7'>
 					{dates.map((iso, i) => {
 						const weekend = i >= 5;
@@ -64,7 +64,7 @@ export function CalendarWeekView({
 								</div>
 								<div className='mt-0.5'>
 									{isToday ? (
-										<span className='inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-forest-500 font-semibold'>
+										<span className='inline-flex items-center justify-center w-6 h-6 rounded-lg bg-white text-forest-500 font-semibold'>
 											{dayNumber(iso)}
 										</span>
 									) : (
@@ -117,7 +117,7 @@ export function CalendarWeekView({
 			</div>
 
 			{/* Mobile: verticaal stacked */}
-			<div className='md:hidden bg-white rounded-2xl border border-cream-300 overflow-hidden shadow-sm divide-y divide-cream-300'>
+			<div className='md:hidden bg-white rounded-lg border border-cream-300 overflow-hidden shadow-sm divide-y divide-cream-300'>
 				{dates.map((iso, i) => {
 					const weekend = i >= 5;
 					const isToday = iso === todayISO;
@@ -137,7 +137,7 @@ export function CalendarWeekView({
 								<div
 									className={`text-base font-semibold ${
 										isToday
-											? 'inline-flex items-center justify-center w-7 h-7 rounded-full bg-forest-500 text-white'
+											? 'inline-flex items-center justify-center w-7 h-7 rounded-lg bg-forest-500 text-white'
 											: 'text-charcoal-900'
 									}`}
 								>
