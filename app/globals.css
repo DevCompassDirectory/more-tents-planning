@@ -44,8 +44,15 @@ body {
 	#planning-print * {
 		visibility: visible;
 	}
-	#pakbon-print,
-	#planning-print {
+
+	/* Verwijder layout-ruimte van top-level siblings zonder print-container,
+	   zodat de print bovenaan de eerste pagina start. */
+	body > *:not(:has(#planning-print)):not(:has(#pakbon-print)) {
+		display: none !important;
+	}
+
+	/* Pakbon is altijd één pagina: absolute positioneren naar top is prima. */
+	#pakbon-print {
 		position: absolute !important;
 		left: 0;
 		top: 0;
@@ -53,14 +60,25 @@ body {
 		padding: 0 !important;
 		background: white !important;
 	}
+
+	/* Planning print blijft in natural flow zodat content over meerdere
+	   pagina's mag breken. Geen position absolute. */
 	#planning-print,
 	#planning-print * {
 		-webkit-print-color-adjust: exact !important;
 		print-color-adjust: exact !important;
 	}
+
+	/* De overflow-x-auto wrapper rond brede tabellen (Format C) mag bij print
+	   niets clippen. */
+	#planning-print .overflow-x-auto {
+		overflow: visible !important;
+	}
+
 	.no-print {
 		display: none !important;
 	}
+
 	.planning-day {
 		page-break-inside: avoid;
 		break-inside: avoid;
