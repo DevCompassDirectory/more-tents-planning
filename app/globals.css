@@ -35,50 +35,48 @@ body {
 }
 
 @media print {
-	body * {
-		visibility: hidden;
-	}
-	#pakbon-print,
-	#pakbon-print *,
-	#planning-print,
-	#planning-print * {
-		visibility: visible;
-	}
-
-	/* Verwijder layout-ruimte van top-level siblings zonder print-container,
-	   zodat de print bovenaan de eerste pagina start. */
-	body > *:not(:has(#planning-print)):not(:has(#pakbon-print)) {
+	/* Verberg alles wat geen onderdeel is van de print-tak
+	   (containers + hun voorouders + hun afstammelingen) */
+	body
+		*:not(
+			:has(#planning-print),
+			:has(#pakbon-print),
+			#planning-print,
+			#pakbon-print,
+			#planning-print *,
+			#pakbon-print *
+		) {
 		display: none !important;
 	}
 
-	/* Pakbon is altijd één pagina: absolute positioneren naar top is prima. */
-	#pakbon-print {
-		position: absolute !important;
-		left: 0;
-		top: 0;
-		width: 100%;
-		padding: 0 !important;
-		background: white !important;
+	/* Voorouders van de print-containers: layout-transparant maken zodat
+	   fixed/absolute wrappers (Modal, PakbonOverlay) multi-page printing
+	   niet breken. De print-container rendert dan in body's natural flow. */
+	*:has(#pakbon-print),
+	*:has(#planning-print) {
+		display: contents !important;
 	}
 
-	/* Planning print blijft in natural flow zodat content over meerdere
-	   pagina's mag breken. Geen position absolute. */
+	/* Brede tabellen (Format C) niet horizontaal clippen bij print */
+	#planning-print .overflow-x-auto {
+		overflow: visible !important;
+	}
+
+	/* Kleur-behoud */
+	#pakbon-print,
+	#pakbon-print *,
 	#planning-print,
 	#planning-print * {
 		-webkit-print-color-adjust: exact !important;
 		print-color-adjust: exact !important;
 	}
 
-	/* De overflow-x-auto wrapper rond brede tabellen (Format C) mag bij print
-	   niets clippen. */
-	#planning-print .overflow-x-auto {
-		overflow: visible !important;
-	}
-
+	/* Expliciete .no-print elementen verbergen (vangnet) */
 	.no-print {
 		display: none !important;
 	}
 
+	/* Dagblokken niet halverwege over pagina's breken */
 	.planning-day {
 		page-break-inside: avoid;
 		break-inside: avoid;
