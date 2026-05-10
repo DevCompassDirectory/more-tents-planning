@@ -1,4 +1,10 @@
+import type { Project } from '@/lib/types/database';
+
 export type CalendarView = 'week' | 'maand' | 'kwartaal' | 'jaar';
+
+const ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+// === Parsers ===
 
 export function parseCalendarView(
 	value: string | undefined | null,
@@ -9,19 +15,15 @@ export function parseCalendarView(
 	return 'maand';
 }
 
-const ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
-
 export function parseCalendarDate(value: string | undefined | null): string {
 	if (value && ISO_RE.test(value)) return value;
 	return todayDate();
 }
 
+// === Date utilities ===
+
 export function todayDate(): string {
-	const d = new Date();
-	const y = d.getFullYear();
-	const m = String(d.getMonth() + 1).padStart(2, '0');
-	const dd = String(d.getDate()).padStart(2, '0');
-	return `${y}-${m}-${dd}`;
+	return fromDate(new Date());
 }
 
 function toDate(iso: string): Date {
@@ -34,6 +36,13 @@ function fromDate(d: Date): string {
 	const dd = String(d.getDate()).padStart(2, '0');
 	return `${y}-${m}-${dd}`;
 }
+
+export function isWeekend(iso: string): boolean {
+	const day = toDate(iso).getDay();
+	return day === 0 || day === 6;
+}
+
+// === Period navigation ===
 
 export function prevPeriod(view: CalendarView, date: string): string {
 	const d = toDate(date);
@@ -107,6 +116,8 @@ export function periodRange(
 	}
 }
 
+// === ISO weeknummer ===
+
 export function getISOWeekNumber(iso: string): number {
 	const d = toDate(iso);
 	const target = new Date(d.valueOf());
@@ -119,6 +130,8 @@ export function getISOWeekNumber(iso: string): number {
 	}
 	return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
 }
+
+// === Periode label ===
 
 const NL_MAANDEN = [
 	'januari',
@@ -149,6 +162,11 @@ const NL_MAANDEN_KORT = [
 	'nov',
 	'dec',
 ];
+
+export function monthName(month: number, short = false): string {
+	const arr = short ? NL_MAANDEN_KORT : NL_MAANDEN;
+	return arr[month] ?? '';
+}
 
 export function formatPeriodLabel(view: CalendarView, date: string): string {
 	const { from, to } = periodRange(view, date);
@@ -184,4 +202,120 @@ export function formatPeriodLabel(view: CalendarView, date: string): string {
 			return String(fromD.getFullYear());
 		}
 	}
+}
+
+// === Date arrays ===
+
+export function weekDates(date: string): string[] {
+	const d = toDate(date);
+	const day = d.getDay();
+	const offset = day === 0 ? -6 : 1 - day;
+	const monday = new Date(d);
+	monday.setDate(monday.getDate() + offset);
+	const out: string[] = [];
+	for (let i = 0; i < 7; i++) {
+		const dd = new Date(monday);
+		dd.setDate(monday.getDate() + i);
+		out.push(fromDate(dd));
+	}
+	return out;
+}
+
+export type MonthCell = { iso: string; day: number; inMonth: boolean };
+
+export function monthCells(year: number, month: number): MonthCell[] {
+	const firstOfMonth = new Date(year, month, 1, 12);
+	const startDayOfWeek = (firstOfMonth.getDay() + 6) % 7;
+	const daysInMonth = new Date(year, month + 1, 0).getDate();
+	const prevMonthDays = new Date(year, month, 0).getDate();
+	const cells: MonthCell[] = [];
+
+	for (let i = startDayOfWeek - 1; i >= 0; i--) {
+		const d = new Date(year, month - 1, prevMonthDays - i, 12);
+		cells.push({ iso: fromDate(d), day: d.getDate(), inMonth: false });
+	}
+	for (let i = 1; i <= daysInMonth; i++) {
+		const d = new Date(year, month, i, 12);
+		cells.push({ iso: fromDate(d), day: d.getDate(), inMonth: true });
+	}
+	while (cells.length % 7 !== 0) {
+		const lastInMonth = startDayOfWeek + daysInMonth;
+		const offset = cells.length - lastInMonth + 1;
+		const d = new Date(year, month + 1, offset, 12);
+		cells.push({ iso: fromDate(d), day: d.getDate(), inMonth: false });
+	}
+	return cells;
+}
+
+export function weekGroups(
+	cells: MonthCell[],
+): { weekNr: number; cells: MonthCell[] }[] {
+	const out: { weekNr: number; cells: MonthCell[] }[] = [];
+	for (let i = 0; i < cells.length; i += 7) {
+		const week = cells.slice(i, i + 7);
+		const weekNr = getISOWeekNumber(week[0].iso);
+		out.push({ weekNr, cells: week });
+	}
+	return out;
+}
+
+export function quarterMonths(date: string): { year: number; month: number }[] {
+	const d = toDate(date);
+	const q = Math.floor(d.getMonth() / 3);
+	const startMonth = q * 3;
+	const year = d.getFullYear();
+	return [
+		{ year, month: startMonth },
+		{ year, month: startMonth + 1 },
+		{ year, month: startMonth + 2 },
+	];
+}
+
+export function yearMonths(date: string): { year: number; month: number }[] {
+	const year = toDate(date).getFullYear();
+	return Array.from({ length: 12 }, (_, m) => ({ year, month: m }));
+}
+
+// === Events ===
+
+export type CalendarEventType = 'op' | 'af' | 'load' | 'unload';
+export type CalendarDayEvent = { type: CalendarEventType; project: Project };
+
+export function eventsForDate(
+	projects: Project[],
+	iso: string,
+): CalendarDayEvent[] {
+	const events: CalendarDayEvent[] = [];
+	for (const p of projects) {
+		if (p.datum_opbouw === iso) events.push({ type: 'op', project: p });
+		if (p.datum_afbouw === iso) events.push({ type: 'af', project: p });
+		if (p.laad_datum_opbouw === iso)
+			events.push({ type: 'load', project: p });
+		if (p.laad_datum_afbouw === iso)
+			events.push({ type: 'unload', project: p });
+	}
+	return events;
+}
+
+export type EventSummary = {
+	hasOpbouw: boolean;
+	hasAfbouw: boolean;
+	totalEvents: number;
+};
+
+export function summarizeEvents(events: CalendarDayEvent[]): EventSummary {
+	let hasOpbouw = false;
+	let hasAfbouw = false;
+	for (const e of events) {
+		if (e.type === 'op' || e.type === 'load') hasOpbouw = true;
+		if (e.type === 'af' || e.type === 'unload') hasAfbouw = true;
+	}
+	return { hasOpbouw, hasAfbouw, totalEvents: events.length };
+}
+
+// === URL ===
+
+export function calendarHref(view: CalendarView, date: string): string {
+	const params = new URLSearchParams({ tab: 'kalender', view, date });
+	return `/?${params.toString()}`;
 }
