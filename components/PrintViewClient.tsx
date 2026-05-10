@@ -13,6 +13,7 @@ import {
 	totalManuren,
 } from '@/lib/planning/print';
 import { PrintFormatA } from '@/components/PrintFormatA';
+import { PrintFormatB } from '@/components/PrintFormatB';
 
 type FormatId = 'a' | 'b' | 'c';
 
@@ -83,11 +84,10 @@ export function PrintViewClient({ projects }: { projects: Project[] }) {
 						A: Per dag gegroepeerd
 					</FormatChip>
 					<FormatChip
-						active={false}
-						disabled
-						onClick={() => {}}
+						active={format === 'b'}
+						onClick={() => setFormat('b')}
 					>
-						B: Compacte tabel (binnenkort)
+						B: Compacte tabel
 					</FormatChip>
 					<FormatChip
 						active={false}
@@ -125,6 +125,15 @@ export function PrintViewClient({ projects }: { projects: Project[] }) {
 			<div id='planning-print'>
 				{format === 'a' && (
 					<PrintFormatA
+						groups={groups}
+						from={from}
+						to={to}
+						statussen={statussen}
+						total={total}
+					/>
+				)}
+				{format === 'b' && (
+					<PrintFormatB
 						groups={groups}
 						from={from}
 						to={to}
