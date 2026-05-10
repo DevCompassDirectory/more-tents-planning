@@ -27,7 +27,7 @@ export function PrintFormatA({ groups, from, to, statussen, total }: Props) {
 		statussen.length === 0 ? 'Alle statussen' : statussen.join(', ');
 
 	return (
-		<article className='max-w-[760px] mx-auto bg-white text-charcoal-900 px-6 py-4'>
+		<article className='mx-auto bg-white text-charcoal-900 px-6 py-4'>
 			<header className='flex justify-between items-start border-b border-sand-400 pb-2.5 mb-4'>
 				<div>
 					<div className='text-lg font-medium text-forest-500'>

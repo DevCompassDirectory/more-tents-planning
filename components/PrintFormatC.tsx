@@ -103,7 +103,7 @@ export function PrintFormatC({ groups, from, to, statussen, total }: Props) {
 	const dayCount = dates.length;
 
 	return (
-		<article className='max-w-[760px] mx-auto bg-white text-charcoal-900 px-6 py-4'>
+		<article className='mx-auto bg-white text-charcoal-900 px-6 py-4'>
 			{dayCount > 7 && (
 				<style>{`@media print { @page { size: A4 landscape; margin: 14mm 18mm; } }`}</style>
 			)}
