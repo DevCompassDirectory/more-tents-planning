@@ -196,51 +196,6 @@ export function ProjectForm({
 				/>
 			</Section>
 
-			<Section title='Laden & Lossen (optioneel)'>
-				<div className='grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3'>
-					<Field label='Laaddatum opbouw'>
-						<input
-							type='date'
-							name='laad_datum_opbouw'
-							defaultValue={v('laad_datum_opbouw')}
-							className={inputCls}
-						/>
-					</Field>
-					<Field label='Laadtijd'>
-						<input
-							type='time'
-							name='laad_tijd_opbouw'
-							defaultValue={v('laad_tijd_opbouw', '18:00').slice(
-								0,
-								5,
-							)}
-							className={inputCls}
-						/>
-					</Field>
-				</div>
-				<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-					<Field label='Losdatum afbouw'>
-						<input
-							type='date'
-							name='laad_datum_afbouw'
-							defaultValue={v('laad_datum_afbouw')}
-							className={inputCls}
-						/>
-					</Field>
-					<Field label='Lostijd'>
-						<input
-							type='time'
-							name='laad_tijd_afbouw'
-							defaultValue={v('laad_tijd_afbouw', '18:00').slice(
-								0,
-								5,
-							)}
-							className={inputCls}
-						/>
-					</Field>
-				</div>
-			</Section>
-
 			<Section title='Personeel'>
 				<div className='grid grid-cols-[auto_1fr_1fr] gap-3 items-center mb-4'>
 					<div></div>
@@ -287,6 +242,51 @@ export function ProjectForm({
 							value={inhuurAfbouw}
 							onChange={(e) => setInhuurAfbouw(e.target.value)}
 							placeholder='Kevin'
+							className={inputCls}
+						/>
+					</Field>
+				</div>
+			</Section>
+
+			<Section title='Laden & Lossen (optioneel)'>
+				<div className='grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3'>
+					<Field label='Laaddatum opbouw'>
+						<input
+							type='date'
+							name='laad_datum_opbouw'
+							defaultValue={v('laad_datum_opbouw')}
+							className={inputCls}
+						/>
+					</Field>
+					<Field label='Laadtijd'>
+						<input
+							type='time'
+							name='laad_tijd_opbouw'
+							defaultValue={v('laad_tijd_opbouw', '18:00').slice(
+								0,
+								5,
+							)}
+							className={inputCls}
+						/>
+					</Field>
+				</div>
+				<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+					<Field label='Losdatum afbouw'>
+						<input
+							type='date'
+							name='laad_datum_afbouw'
+							defaultValue={v('laad_datum_afbouw')}
+							className={inputCls}
+						/>
+					</Field>
+					<Field label='Lostijd'>
+						<input
+							type='time'
+							name='laad_tijd_afbouw'
+							defaultValue={v('laad_tijd_afbouw', '18:00').slice(
+								0,
+								5,
+							)}
 							className={inputCls}
 						/>
 					</Field>
