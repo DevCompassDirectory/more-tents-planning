@@ -104,6 +104,9 @@ export function PrintFormatC({ groups, from, to, statussen, total }: Props) {
 
 	return (
 		<article className='max-w-[760px] mx-auto bg-white text-charcoal-900 px-6 py-4'>
+			{dayCount > 7 && (
+				<style>{`@media print { @page { size: A4 landscape; margin: 14mm 18mm; } }`}</style>
+			)}
 			<header className='flex justify-between items-start border-b border-sand-400 pb-2.5 mb-4'>
 				<div>
 					<div className='text-lg font-medium text-forest-500'>
@@ -143,7 +146,7 @@ export function PrintFormatC({ groups, from, to, statussen, total }: Props) {
 						</colgroup>
 						<thead>
 							<tr>
-								<th className='text-left px-2 py-1 font-medium bg-forest-500 text-white'>
+								<th className='text-left px-2 py-1 font-medium bg-forest-500 text-white sticky left-0 z-20'>
 									Crew
 								</th>
 								{dates.map((d) => (
@@ -172,7 +175,7 @@ export function PrintFormatC({ groups, from, to, statussen, total }: Props) {
 										className='border-b border-cream-300/60 last:border-b-0'
 									>
 										<td
-											className={`px-2 py-1 whitespace-nowrap font-medium bg-white truncate ${
+											className={`px-2 py-1 whitespace-nowrap font-medium bg-white truncate sticky left-0 z-10 ${
 												isFixed
 													? 'text-forest-600'
 													: 'text-charcoal-900'
@@ -247,8 +250,7 @@ export function PrintFormatC({ groups, from, to, statussen, total }: Props) {
 
 			{dayCount > 7 && (
 				<div className='no-print mt-3 text-[11px] text-charcoal-900/60 italic'>
-					Tip: bij periodes langer dan 7 dagen kies je bij Afdrukken
-					het beste &lsquo;Liggend&rsquo; voor een leesbaar resultaat.
+					Deze periode wordt automatisch liggend afgedrukt.
 				</div>
 			)}
 		</article>
