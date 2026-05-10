@@ -1,10 +1,19 @@
 import { Tabs } from '@/components/Tabs';
 import { ProjectList } from '@/components/ProjectList';
 import { CalendarView } from '@/components/CalendarView';
+import { PrintView } from '@/components/PrintView';
 import { createClient } from '@/lib/supabase/server';
 import { getProjects } from '@/lib/projects/queries';
 import { unseenProjects } from '@/lib/projects/seen';
 import type { Project } from '@/lib/types/database';
+
+type Tab = 'kalender' | 'lijst' | 'print';
+
+function parseTab(value: string | undefined): Tab {
+	if (value === 'lijst') return 'lijst';
+	if (value === 'print') return 'print';
+	return 'kalender';
+}
 
 export default async function Home({
 	searchParams,
@@ -12,7 +21,7 @@ export default async function Home({
 	searchParams: Promise<{ tab?: string }>;
 }) {
 	const params = await searchParams;
-	const activeTab = params.tab === 'lijst' ? 'lijst' : 'kalender';
+	const activeTab = parseTab(params.tab);
 
 	const supabase = await createClient();
 	const {
@@ -25,8 +34,12 @@ export default async function Home({
 		<>
 			<Tabs active={activeTab} />
 			<main className='max-w-6xl mx-auto px-6 py-8'>
-				{unread.length > 0 && <UnseenBanner projects={unread} />}
-				{activeTab === 'kalender' ? <CalendarView /> : <ProjectList />}
+				{activeTab !== 'print' && unread.length > 0 && (
+					<UnseenBanner projects={unread} />
+				)}
+				{activeTab === 'kalender' && <CalendarView />}
+				{activeTab === 'lijst' && <ProjectList />}
+				{activeTab === 'print' && <PrintView />}
 			</main>
 		</>
 	);

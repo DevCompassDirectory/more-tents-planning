@@ -3,9 +3,12 @@ import Link from 'next/link';
 const TABS = [
 	{ id: 'kalender', label: 'Kalender' },
 	{ id: 'lijst', label: 'Lijst' },
+	{ id: 'print', label: 'Print' },
 ] as const;
 
-export function Tabs({ active }: { active: 'kalender' | 'lijst' }) {
+type TabId = (typeof TABS)[number]['id'];
+
+export function Tabs({ active }: { active: TabId }) {
 	return (
 		<nav className='bg-white border-b border-cream-300 sticky top-14 z-40'>
 			<div className='max-w-6xl mx-auto px-6 flex'>
