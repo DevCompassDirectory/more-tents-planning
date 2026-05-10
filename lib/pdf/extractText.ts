@@ -30,21 +30,29 @@ export async function extractPdfText(file: File): Promise<string> {
 
 		const pdf = await pdfjsLib.getDocument({
 			data: arrayBuffer,
-			disableWorker: true,
-		} as any).promise;
+		}).promise;
 		console.log('[PDF] Document geopend, paginas:', pdf.numPages);
 
 		let text = '';
 		for (let i = 1; i <= pdf.numPages; i++) {
 			const page = await pdf.getPage(i);
-			const content = await page.getTextContent();
-			text +=
-				content.items.map((x) => ('str' in x ? x.str : '')).join(' ') +
-				'\n';
+			const stream = page.streamTextContent({
+				includeMarkedContent: false,
+				disableNormalization: false,
+			});
+			const reader = stream.getReader();
+			let pageText = '';
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				pageText +=
+					value.items
+						.map((x: any) => ('str' in x ? x.str : ''))
+						.join(' ') + ' ';
+			}
+			text += pageText + '\n';
 			console.log('[PDF] Pagina', i, 'klaar');
 		}
-
-		console.log('[PDF] DONE, totaal tekst:', text.length, 'chars');
 		return text;
 	} catch (err) {
 		console.error('[PDF] FOUT:', err);
