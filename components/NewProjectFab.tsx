@@ -12,7 +12,7 @@ export function NewProjectFab() {
 			<button
 				type='button'
 				onClick={() => setOpen(true)}
-				className='fixed bottom-7 right-7 w-14 h-14 bg-forest-500 hover:bg-forest-600 text-white rounded-full text-3xl leading-none shadow-lg shadow-forest-500/40 flex items-center justify-center transition-transform hover:scale-110 z-50'
+				className='fixed bottom-7 right-7 w-14 h-14 bg-forest-500 hover:bg-forest-600 text-white rounded-lg text-2xl leading-none shadow-lg shadow-forest-500/40 flex items-center justify-center transition-transform hover:scale-110 z-50'
 				aria-label='Nieuw project'
 				title='Nieuw project'
 			>

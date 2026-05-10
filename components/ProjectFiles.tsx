@@ -137,7 +137,7 @@ export function ProjectFiles({ project }: { project: Project }) {
 	}
 
 	return (
-		<div className='bg-paper-50 rounded-2xl p-5'>
+		<div className='bg-paper-50 rounded-lg p-5'>
 			<div className='flex items-center justify-between mb-3 gap-3'>
 				<div className='text-xs font-bold text-forest-500 uppercase tracking-wider'>
 					Documenten {files.length > 0 && `(${files.length})`}
@@ -177,7 +177,7 @@ export function ProjectFiles({ project }: { project: Project }) {
 					{files.map((file, idx) => (
 						<div
 							key={file.id}
-							className='flex bg-white border border-cream-300 rounded-xl overflow-hidden transition-colors'
+							className='flex bg-white border border-cream-300 rounded-lg overflow-hidden transition-colors'
 						>
 							<button
 								type='button'
@@ -193,7 +193,7 @@ export function ProjectFiles({ project }: { project: Project }) {
 											{file.file_name}
 										</span>
 										{idx === 0 && files.length > 1 && (
-											<span className='text-[10px] bg-forest-50 text-forest-600 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider'>
+											<span className='text-[10px] bg-forest-50 text-forest-600 px-1.5 py-0.5 rounded-lg font-semibold uppercase tracking-wider'>
 												Laatst toegevoegd
 											</span>
 										)}

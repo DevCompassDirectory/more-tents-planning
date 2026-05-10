@@ -162,7 +162,7 @@ export function ProductsClient({
 				</button>
 			</div>
 
-			<div className='grid grid-cols-1 md:grid-cols-[280px_1fr] bg-white rounded-2xl border border-cream-300 overflow-hidden min-h-[500px]'>
+			<div className='grid grid-cols-1 md:grid-cols-[280px_1fr] bg-white rounded-lg border border-cream-300 overflow-hidden min-h-[500px]'>
 				<div className='border-r-0 md:border-r border-cream-300 border-b md:border-b-0'>
 					<div className='p-3 border-b border-cream-300'>
 						<input
@@ -426,7 +426,7 @@ function ProductForm({
 			</button>
 
 			{error && (
-				<div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 mt-5'>
+				<div className='bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mt-5'>
 					{error}
 				</div>
 			)}

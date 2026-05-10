@@ -320,7 +320,7 @@ export function ProjectForm({
 			)}
 
 			{state.error && (
-				<div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 mt-4'>
+				<div className='bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mt-4'>
 					{state.error}
 				</div>
 			)}
@@ -330,7 +330,7 @@ export function ProjectForm({
 					<button
 						type='button'
 						onClick={handleDelete}
-						className='px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-xl transition-colors'
+						className='px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-lg transition-colors'
 					>
 						Verwijder
 					</button>
@@ -339,14 +339,14 @@ export function ProjectForm({
 				<button
 					type='button'
 					onClick={onClose}
-					className='px-5 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors'
+					className='px-5 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-lg transition-colors'
 				>
 					Annuleer
 				</button>
 				<button
 					type='submit'
 					disabled={pending}
-					className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors'
+					className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'
 				>
 					{pending ? 'Opslaan...' : 'Opslaan'}
 				</button>

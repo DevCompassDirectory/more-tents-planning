@@ -54,7 +54,7 @@ export function ProjectDetail({
 				<div className='px-7 pt-6 pb-4'>
 					<div className='flex items-center gap-3 mb-5'>
 						<span
-							className={`text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full ${statusBadgeClasses(p.status)}`}
+							className={`text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-lg ${statusBadgeClasses(p.status)}`}
 						>
 							{p.status}
 						</span>
@@ -179,7 +179,7 @@ export function ProjectDetail({
 					</div>
 
 					{p.changes && p.changes.length > 0 && (
-						<div className='bg-orange-50 border border-orange-200 rounded-xl p-4 mt-4'>
+						<div className='bg-orange-50 border border-orange-200 rounded-lg p-4 mt-4'>
 							<div className='text-xs font-bold uppercase tracking-wider text-orange-800 mb-2'>
 								Wijzigingshistorie
 							</div>
@@ -238,14 +238,14 @@ export function ProjectDetail({
 						<button
 							type='button'
 							onClick={() => setPakbonOpen(true)}
-							className='px-4 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors text-sm'
+							className='px-4 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-lg transition-colors text-sm'
 						>
 							📋 Pakbon
 						</button>
 						<button
 							type='button'
 							onClick={handleDelete}
-							className='px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-xl transition-colors text-sm'
+							className='px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-lg transition-colors text-sm'
 						>
 							🗑 Verwijderen
 						</button>
@@ -253,14 +253,14 @@ export function ProjectDetail({
 						<button
 							type='button'
 							onClick={onClose}
-							className='px-4 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors text-sm'
+							className='px-4 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-lg transition-colors text-sm'
 						>
 							Sluiten
 						</button>
 						<button
 							type='button'
 							onClick={onEdit}
-							className='px-4 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-xl transition-colors text-sm'
+							className='px-4 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-lg transition-colors text-sm'
 						>
 							Bewerken
 						</button>
@@ -307,7 +307,7 @@ function CrewIndicator({
 	return (
 		<div className='flex items-center gap-2 text-sm mb-1'>
 			<span
-				className={`w-2 h-2 rounded-full flex-shrink-0 ${
+				className={`w-2 h-2 rounded-lg shrink-0 ${
 					present ? 'bg-forest-500' : 'bg-gray-300'
 				}`}
 			/>

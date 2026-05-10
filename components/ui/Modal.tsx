@@ -38,7 +38,7 @@ export function Modal({
 			}}
 		>
 			<div
-				className={`bg-white rounded-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden ${
+				className={`bg-white rounded-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden ${
 					wide ? 'max-w-6xl' : 'max-w-2xl'
 				}`}
 			>
@@ -47,7 +47,7 @@ export function Modal({
 					<button
 						type='button'
 						onClick={onClose}
-						className='w-9 h-9 rounded-full hover:bg-paper-50 text-charcoal-900/60 hover:text-charcoal-900 flex items-center justify-center text-xl transition-colors'
+						className='w-9 h-9 rounded-lg hover:bg-paper-50 text-charcoal-900/60 hover:text-charcoal-900 flex items-center justify-center text-xl transition-colors'
 						aria-label='Sluiten'
 					>
 						×

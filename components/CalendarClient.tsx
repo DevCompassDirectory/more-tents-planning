@@ -126,7 +126,7 @@ function MonthGrid({
 	}
 
 	return (
-		<div className='bg-white rounded-2xl border border-cream-300 overflow-hidden shadow-sm'>
+		<div className='bg-white rounded-lg border border-cream-300 overflow-hidden shadow-sm'>
 			<div className='grid grid-cols-7 bg-forest-500 text-white'>
 				{DAYS.map((d) => (
 					<div
@@ -170,7 +170,7 @@ function MonthGrid({
 							className={`min-h-[80px] sm:min-h-[110px] p-1.5 sm:p-2 border-r border-b border-cream-300 [&:nth-child(7n)]:border-r-0 ${cellBg}`}
 						>
 							{isToday ? (
-								<div className='w-6 h-6 bg-forest-500 text-white rounded-full text-xs font-bold flex items-center justify-center mb-1'>
+								<div className='w-6 h-6 bg-forest-500 text-white rounded-lg text-xs font-bold flex items-center justify-center mb-1'>
 									{cell.date.getDate()}
 								</div>
 							) : (
@@ -216,7 +216,7 @@ function ComingSoonView({ view }: { view: CalendarView }) {
 		jaar: 'Jaar-view',
 	};
 	return (
-		<div className='bg-white rounded-2xl border border-cream-300 p-12 text-center'>
+		<div className='bg-white rounded-lg border border-cream-300 p-12 text-center'>
 			<div className='font-display text-2xl text-forest-500 mb-2'>
 				{labels[view]}
 			</div>
@@ -257,11 +257,11 @@ function CalendarEvent({
 			type='button'
 			onClick={onClick}
 			title={project.klant_naam || 'naamloos'}
-			className={`relative block w-full text-left text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded truncate font-medium hover:opacity-80 transition-opacity ${styles[type]}`}
+			className={`relative block w-full text-left text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded-lg truncate font-medium hover:opacity-80 transition-opacity ${styles[type]}`}
 		>
 			{labels[type]}
 			{unseen && (
-				<span className='absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-amber-500 rounded-full' />
+				<span className='absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-amber-500 rounded-lg' />
 			)}
 		</button>
 	);

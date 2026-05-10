@@ -63,7 +63,7 @@ function DayBlock({ group }: { group: DayGroup }) {
 	return (
 		<div className='planning-day mb-3.5'>
 			<div
-				className={`px-2.5 py-1 rounded text-sm font-medium flex justify-between items-center mb-1.5 ${
+				className={`px-2.5 py-1 rounded-lg text-sm font-medium flex justify-between items-center mb-1.5 ${
 					isEmpty
 						? 'bg-cream-300 text-charcoal-900/60'
 						: 'bg-forest-500 text-white'
@@ -120,7 +120,7 @@ function EventRow({ event }: { event: DayEvent }) {
 	return (
 		<div className='grid grid-cols-[auto_1fr_auto] gap-2 text-xs leading-snug py-0.5 items-start'>
 			<span
-				className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-medium tracking-wider mt-0.5 ${pillClasses}`}
+				className={`inline-block px-1.5 py-0.5 rounded-lg text-[11px] font-medium tracking-wider mt-0.5 ${pillClasses}`}
 			>
 				{pillLabel}
 			</span>

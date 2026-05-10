@@ -54,7 +54,7 @@ export default async function Home({
 
 function UnseenBanner({ projects }: { projects: Project[] }) {
 	return (
-		<div className='bg-orange-50 border border-orange-300 rounded-xl p-4 mb-5 flex gap-3 items-start'>
+		<div className='bg-orange-50 border border-orange-300 rounded-lg p-4 mb-5 flex gap-3 items-start'>
 			<div className='text-xl leading-none'>⚠</div>
 			<div className='flex-1'>
 				<div className='font-semibold text-orange-800 mb-1'>

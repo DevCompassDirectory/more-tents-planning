@@ -72,7 +72,7 @@ export function ProjectListClient({
 
 	if (projects.length === 0) {
 		return (
-			<div className='bg-white rounded-2xl border border-cream-300 p-16 text-center'>
+			<div className='bg-white rounded-lg border border-cream-300 p-16 text-center'>
 				<div className='font-display text-2xl text-forest-500 mb-2'>
 					Nog geen projecten
 				</div>
@@ -94,7 +94,7 @@ export function ProjectListClient({
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
 							placeholder='Zoek op klant of offerte nr...'
-							className='w-full px-4 py-2.5 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+							className='w-full px-4 py-2.5 border border-cream-300 rounded-lg bg-white focus:border-forest-500 outline-none transition-colors text-sm'
 						/>
 					</div>
 					<div className='flex items-center gap-2'>
@@ -103,7 +103,7 @@ export function ProjectListClient({
 							value={dateFrom}
 							onChange={(e) => setDateFrom(e.target.value)}
 							aria-label='Datum vanaf'
-							className='px-3 py-2.5 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+							className='px-3 py-2.5 border border-cream-300 rounded-lg bg-white focus:border-forest-500 outline-none transition-colors text-sm'
 						/>
 						<span className='text-charcoal-900/40'>–</span>
 						<input
@@ -111,7 +111,7 @@ export function ProjectListClient({
 							value={dateTo}
 							onChange={(e) => setDateTo(e.target.value)}
 							aria-label='Datum tot'
-							className='px-3 py-2.5 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+							className='px-3 py-2.5 border border-cream-300 rounded-lg bg-white focus:border-forest-500 outline-none transition-colors text-sm'
 						/>
 					</div>
 				</div>
@@ -160,7 +160,7 @@ export function ProjectListClient({
 			</div>
 
 			{filtered.length === 0 ? (
-				<div className='bg-white rounded-2xl border border-cream-300 p-12 text-center'>
+				<div className='bg-white rounded-lg border border-cream-300 p-12 text-center'>
 					<div className='font-display text-xl text-forest-500 mb-2'>
 						Geen projecten gevonden
 					</div>
@@ -170,7 +170,7 @@ export function ProjectListClient({
 					<button
 						type='button'
 						onClick={resetFilters}
-						className='px-4 py-2 bg-forest-500 hover:bg-forest-600 text-white text-sm font-medium rounded-full transition-colors'
+						className='px-4 py-2 bg-forest-500 hover:bg-forest-600 text-white text-sm font-medium rounded-lg transition-colors'
 					>
 						Filters wissen
 					</button>
@@ -235,7 +235,7 @@ function FilterChip({
 	children: React.ReactNode;
 }) {
 	const base =
-		'px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors border whitespace-nowrap';
+		'px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors border whitespace-nowrap';
 	const states = active
 		? amber
 			? 'bg-amber-500 border-amber-500 text-white'
@@ -269,7 +269,7 @@ function ProjectCard({
 	return (
 		<article
 			onClick={onClick}
-			className={`border rounded-2xl p-5 shadow-sm border-l-4 grid grid-cols-[1fr_auto] gap-4 items-start cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all ${cardCls}`}
+			className={`border rounded-lg p-5 shadow-sm border-l-4 grid grid-cols-[1fr_auto] gap-4 items-start cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all ${cardCls}`}
 		>
 			<div>
 				<div className='font-medium text-base mb-1'>
@@ -280,7 +280,7 @@ function ProjectCard({
 				</div>
 				<div className='flex flex-wrap gap-2'>
 					{p.datum_opbouw && (
-						<span className='text-xs bg-forest-50 text-forest-600 rounded-full px-2.5 py-1 font-medium'>
+						<span className='text-xs bg-forest-50 text-forest-600 rounded-lg px-2.5 py-1 font-medium'>
 							↑ {formatDate(p.datum_opbouw)}
 							{p.tijd_opbouw
 								? ` ${formatTime(p.tijd_opbouw)}`
@@ -288,7 +288,7 @@ function ProjectCard({
 						</span>
 					)}
 					{p.datum_afbouw && (
-						<span className='text-xs bg-paper-50 text-charcoal-900/70 rounded-full px-2.5 py-1 font-medium'>
+						<span className='text-xs bg-paper-50 text-charcoal-900/70 rounded-lg px-2.5 py-1 font-medium'>
 							↓ {formatDate(p.datum_afbouw)}
 							{p.tijd_afbouw
 								? ` ${formatTime(p.tijd_afbouw)}`
@@ -296,12 +296,12 @@ function ProjectCard({
 						</span>
 					)}
 					{p.locatie && (
-						<span className='text-xs bg-paper-50 text-charcoal-900/70 rounded-full px-2.5 py-1 font-medium'>
+						<span className='text-xs bg-paper-50 text-charcoal-900/70 rounded-lg px-2.5 py-1 font-medium'>
 							{p.locatie.split(',')[0]}
 						</span>
 					)}
 					{unseen && (
-						<span className='text-xs bg-amber-100 text-amber-800 rounded-full px-2.5 py-1 font-medium'>
+						<span className='text-xs bg-amber-100 text-amber-800 rounded-lg px-2.5 py-1 font-medium'>
 							⚠ Gewijzigd
 						</span>
 					)}
@@ -309,12 +309,12 @@ function ProjectCard({
 			</div>
 			<div className='flex flex-col items-end gap-1.5'>
 				<span
-					className={`text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full whitespace-nowrap ${statusBadgeClasses(p.status)}`}
+					className={`text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-lg whitespace-nowrap ${statusBadgeClasses(p.status)}`}
 				>
 					{p.status}
 				</span>
 				{unseen && (
-					<span className='text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500 text-white'>
+					<span className='text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg bg-amber-500 text-white'>
 						Gewijzigd
 					</span>
 				)}

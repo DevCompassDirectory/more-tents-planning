@@ -99,7 +99,7 @@ export function DayContext({
 		.filter(Boolean);
 
 	return (
-		<div className='bg-amber-50 border-l-[3px] border-amber-500 rounded-r-xl p-3.5 mb-4'>
+		<div className='bg-amber-50 border-l-[3px] border-amber-500 rounded-r-lg p-3.5 mb-4'>
 			<div className='text-[11px] font-bold uppercase tracking-wider text-amber-800 mb-2.5'>
 				📅{' '}
 				{activities.length === 1
@@ -156,7 +156,7 @@ export function DayContext({
 
 function PersonChip({ name }: { name: string }) {
 	return (
-		<span className='text-[11px] px-2 py-0.5 bg-forest-50 text-forest-600 rounded-md font-medium'>
+		<span className='text-[11px] px-2 py-0.5 bg-forest-50 text-forest-600 rounded-lg font-medium'>
 			{name}
 		</span>
 	);
@@ -173,7 +173,7 @@ function InhuurChip({
 }) {
 	if (alreadyAdded) {
 		return (
-			<span className='text-[11px] px-2 py-0.5 bg-forest-50 text-forest-600 rounded-md font-medium'>
+			<span className='text-[11px] px-2 py-0.5 bg-forest-50 text-forest-600 rounded-lg font-medium'>
 				✓ {name}
 			</span>
 		);
@@ -182,7 +182,7 @@ function InhuurChip({
 		<button
 			type='button'
 			onClick={onAdd}
-			className='text-[11px] px-2 py-0.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 border border-cream-300 rounded-md transition-colors'
+			className='text-[11px] px-2 py-0.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 border border-cream-300 rounded-lg transition-colors'
 		>
 			+ {name}
 		</button>

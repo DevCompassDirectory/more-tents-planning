@@ -277,7 +277,7 @@ export function PakbonOverlay({
 						{project.klant_naam || '—'}
 					</div>
 
-					<div className='grid grid-cols-[140px_1fr] gap-2 bg-paper-50 rounded-xl p-4 mb-7 text-sm'>
+					<div className='grid grid-cols-[140px_1fr] gap-2 bg-paper-50 rounded-lg p-4 mb-7 text-sm'>
 						<span className='text-charcoal-900/60 font-semibold'>
 							Locatie
 						</span>
@@ -417,7 +417,7 @@ export function PakbonOverlay({
 					)}
 
 					<div className='grid grid-cols-2 gap-4 mb-6'>
-						<div className='bg-forest-50 border border-forest-100 rounded-xl p-4'>
+						<div className='bg-forest-50 border border-forest-100 rounded-lg p-4'>
 							<div className='text-[10px] font-bold uppercase tracking-wider text-forest-600 mb-2'>
 								Team opbouw
 							</div>
@@ -425,7 +425,7 @@ export function PakbonOverlay({
 								{crewNames('op')}
 							</div>
 						</div>
-						<div className='bg-forest-50 border border-forest-100 rounded-xl p-4'>
+						<div className='bg-forest-50 border border-forest-100 rounded-lg p-4'>
 							<div className='text-[10px] font-bold uppercase tracking-wider text-forest-600 mb-2'>
 								Team afbouw
 							</div>
@@ -464,7 +464,7 @@ function EditTable({
 }) {
 	return (
 		<div className='max-w-4xl mx-auto px-6 py-6'>
-			<div className='bg-white rounded-2xl border border-cream-300 overflow-hidden'>
+			<div className='bg-white rounded-lg border border-cream-300 overflow-hidden'>
 				<div className='grid grid-cols-[140px_1fr_100px_40px] gap-2 px-4 py-2.5 bg-paper-50 border-b border-cream-300 text-[11px] font-bold uppercase tracking-wider text-charcoal-900/60'>
 					<span>Categorie</span>
 					<span>Omschrijving</span>

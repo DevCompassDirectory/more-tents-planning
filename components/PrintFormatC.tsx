@@ -169,11 +169,11 @@ export function PrintFormatC({ groups, from, to, statussen, total }: Props) {
 
 			<div className='mt-3 flex flex-wrap gap-3 text-[11px] text-charcoal-900/60'>
 				<span className='flex items-center gap-1'>
-					<span className='inline-block w-3 h-3 rounded bg-green-100 border border-green-200' />
+					<span className='inline-block w-3 h-3 rounded-lg bg-green-100 border border-green-200' />
 					Opbouw
 				</span>
 				<span className='flex items-center gap-1'>
-					<span className='inline-block w-3 h-3 rounded bg-amber-100 border border-amber-200' />
+					<span className='inline-block w-3 h-3 rounded-lg bg-amber-100 border border-amber-200' />
 					Afbouw
 				</span>
 				<span className='italic'>
@@ -285,7 +285,7 @@ function CrewTable({
 												<div
 													key={i}
 													title={`${ev.klant} (${ev.type})`}
-													className={`text-[9px] px-1 py-0.5 rounded font-medium text-center truncate ${
+													className={`text-[9px] px-1 py-0.5 rounded-lg font-medium text-center truncate ${
 														ev.type === 'opbouw'
 															? 'bg-green-100 text-green-800'
 															: 'bg-amber-100 text-amber-800'

@@ -47,7 +47,7 @@ export function PdfImportFab() {
 			<button
 				type='button'
 				onClick={handleFabClick}
-				className='fixed bottom-9 right-24 w-12 h-12 bg-white border-2 border-forest-500 text-forest-500 rounded-full text-xl shadow-md hover:bg-forest-50 flex items-center justify-center transition-transform hover:scale-110 z-50'
+				className='fixed bottom-7 right-24 w-14 h-14 bg-white border-2 border-forest-500 text-forest-500 rounded-lg text-xl shadow-md hover:bg-forest-50 flex items-center justify-center transition-transform hover:scale-110 z-50'
 				aria-label='Project importeren uit PDF offerte'
 				title='Project importeren uit PDF offerte'
 			>
@@ -196,7 +196,7 @@ function PdfImportForm({
 
 	const detBadge = (v: string | undefined) =>
 		isDetected(v) ? (
-			<span className='ml-1 text-[10px] bg-forest-50 text-forest-600 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider'>
+			<span className='ml-1 text-[10px] bg-forest-50 text-forest-600 px-1.5 py-0.5 rounded-lg font-semibold uppercase tracking-wider'>
 				herkend
 			</span>
 		) : null;
@@ -230,7 +230,7 @@ function PdfImportForm({
 				value={JSON.stringify(parsed.line_items)}
 			/>
 
-			<div className='bg-forest-50 border border-forest-100 rounded-xl px-4 py-3 mb-5'>
+			<div className='bg-forest-50 border border-forest-100 rounded-lg px-4 py-3 mb-5'>
 				<div className='text-xs font-bold uppercase tracking-wider text-forest-600 mb-1'>
 					PDF herkend
 				</div>
@@ -441,7 +441,7 @@ function PdfImportForm({
 				<Section
 					title={`Herkende artikelen (${parsed.line_items.length})`}
 				>
-					<div className='bg-paper-50 rounded-xl p-3 max-h-48 overflow-y-auto space-y-1'>
+					<div className='bg-paper-50 rounded-lg p-3 max-h-48 overflow-y-auto space-y-1'>
 						{parsed.line_items.map((it, i) => (
 							<div
 								key={i}
@@ -475,7 +475,7 @@ function PdfImportForm({
 			</Section>
 
 			{state.error && (
-				<div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 mt-4'>
+				<div className='bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mt-4'>
 					{state.error}
 				</div>
 			)}
@@ -484,14 +484,14 @@ function PdfImportForm({
 				<button
 					type='button'
 					onClick={onClose}
-					className='px-5 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-xl transition-colors'
+					className='px-5 py-2.5 bg-paper-50 hover:bg-cream-300 text-charcoal-900 font-medium rounded-lg transition-colors'
 				>
 					Annuleer
 				</button>
 				<button
 					type='submit'
 					disabled={pending}
-					className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors'
+					className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'
 				>
 					{pending ? 'Opslaan...' : 'Project opslaan'}
 				</button>

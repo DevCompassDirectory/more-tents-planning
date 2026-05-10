@@ -55,20 +55,20 @@ export function PrintViewClient({ projects }: { projects: Project[] }) {
 							type='date'
 							value={from}
 							onChange={(e) => setFrom(e.target.value)}
-							className='px-3 py-2 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+							className='px-3 py-2 border border-cream-300 rounded-lg bg-white focus:border-forest-500 outline-none transition-colors text-sm'
 						/>
 						<span className='text-charcoal-900/40'>–</span>
 						<input
 							type='date'
 							value={to}
 							onChange={(e) => setTo(e.target.value)}
-							className='px-3 py-2 border border-cream-300 rounded-xl bg-white focus:border-forest-500 outline-none transition-colors text-sm'
+							className='px-3 py-2 border border-cream-300 rounded-lg bg-white focus:border-forest-500 outline-none transition-colors text-sm'
 						/>
 					</div>
 					<button
 						type='button'
 						onClick={() => window.print()}
-						className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-xl text-sm transition-colors'
+						className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-lg text-sm transition-colors'
 					>
 						Afdrukken
 					</button>
@@ -171,7 +171,7 @@ function FormatChip({
 			type='button'
 			disabled={disabled}
 			onClick={onClick}
-			className={`px-3 py-1 text-xs rounded-full font-medium border transition-colors whitespace-nowrap ${
+			className={`px-3 py-1 text-xs rounded-lg font-medium border transition-colors whitespace-nowrap ${
 				disabled
 					? 'bg-paper-50 text-charcoal-900/30 border-cream-300 cursor-not-allowed'
 					: active
@@ -197,7 +197,7 @@ function StatusChip({
 		<button
 			type='button'
 			onClick={onClick}
-			className={`px-3 py-1 text-xs rounded-full font-medium border transition-colors ${
+			className={`px-3 py-1 text-xs rounded-lg font-medium border transition-colors ${
 				active
 					? 'bg-forest-500 text-white border-forest-500'
 					: 'bg-white text-charcoal-900/70 border-cream-300 hover:border-charcoal-900/30'

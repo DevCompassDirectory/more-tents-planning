@@ -36,7 +36,7 @@ export function CalendarToolbar({ view, date }: Props) {
 	const isToday = date === today;
 
 	return (
-		<div className='bg-white rounded-2xl border border-cream-300 px-3 sm:px-4 py-3 mb-3 shadow-sm'>
+		<div className='py-3 mb-3'>
 			<div className='flex flex-wrap items-center gap-2 sm:gap-3'>
 				<div className='flex gap-1.5 flex-wrap'>
 					{VIEWS.map((v) => {
@@ -45,7 +45,7 @@ export function CalendarToolbar({ view, date }: Props) {
 							<Link
 								key={v.id}
 								href={buildHref(v.id, date)}
-								className={`text-xs sm:text-sm px-3 sm:px-3.5 py-1.5 rounded-full font-medium transition-colors ${
+								className={`text-xs sm:text-sm px-3 sm:px-3.5 py-1.5 rounded-lg font-medium transition-colors ${
 									isActive
 										? 'bg-forest-500 text-white'
 										: 'bg-white text-charcoal-900 border border-cream-300 hover:border-sand-400'
@@ -81,7 +81,7 @@ export function CalendarToolbar({ view, date }: Props) {
 					{!isToday && (
 						<Link
 							href={buildHref(view, today)}
-							className='text-xs px-3 py-1.5 rounded-full bg-white border border-cream-300 hover:border-sand-400 text-charcoal-900 transition-colors'
+							className='text-xs px-3 py-1.5 rounded-lg bg-white border border-cream-300 hover:border-sand-400 text-charcoal-900 transition-colors'
 						>
 							Vandaag
 						</Link>

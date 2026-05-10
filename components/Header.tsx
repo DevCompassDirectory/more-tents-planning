@@ -20,7 +20,7 @@ export function Header({
 				</Link>
 				<div className='flex items-center gap-3'>
 					{unreadCount > 0 && (
-						<span className='bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full'>
+						<span className='bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg'>
 							{unreadCount}{' '}
 							{unreadCount === 1 ? 'wijziging' : 'wijzigingen'}
 						</span>
