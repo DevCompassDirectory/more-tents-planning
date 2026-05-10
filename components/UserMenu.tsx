@@ -40,6 +40,13 @@ export function UserMenu({ user }: { user: User }) {
 						{user.email}
 					</div>
 					<Link
+						href='/'
+						onClick={() => setOpen(false)}
+						className='block px-4 py-2 text-sm hover:bg-paper-50 transition-colors'
+					>
+						Planning
+					</Link>
+					<Link
 						href='/producten'
 						onClick={() => setOpen(false)}
 						className='block px-4 py-2 text-sm hover:bg-paper-50 transition-colors'

@@ -10,7 +10,10 @@ import {
 	LINE_ITEM_CATEGORIES,
 	type LineItemCategorie,
 	type Project,
+	type ProductWithRequirements,
+	type ProductRequirement,
 } from '@/lib/types/database';
+import { findProductMatch, parseAantal } from '@/lib/products/match';
 import { formatDate } from '@/lib/utils/date';
 
 type LineItem = {
@@ -36,37 +39,62 @@ export function PakbonOverlay({
 	onClose: () => void;
 }) {
 	const [items, setItems] = useState<LineItem[]>([]);
+	const [products, setProducts] = useState<ProductWithRequirements[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [editMode, setEditMode] = useState(false);
 	const [editItems, setEditItems] = useState<LineItem[]>([]);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const loadItems = useCallback(async () => {
+	const loadData = useCallback(async () => {
 		const supabase = createClient();
-		const { data, error } = await supabase
-			.from('line_items')
-			.select('*')
-			.eq('project_id', project.id)
-			.order('sort_order', { ascending: true });
-		if (error) {
-			setError('Artikelen laden mislukt: ' + error.message);
+
+		const [itemsRes, productsRes, reqsRes] = await Promise.all([
+			supabase
+				.from('line_items')
+				.select('*')
+				.eq('project_id', project.id)
+				.order('sort_order', { ascending: true }),
+			supabase.from('products').select('*'),
+			supabase
+				.from('product_requirements')
+				.select('*')
+				.order('sort_order', { ascending: true }),
+		]);
+
+		if (itemsRes.error) {
+			setError('Artikelen laden mislukt: ' + itemsRes.error.message);
 			return;
 		}
 		setItems(
-			(data ?? []).map((row) => ({
+			(itemsRes.data ?? []).map((row) => ({
 				id: row.id,
 				categorie: row.categorie,
 				naam: row.naam,
 				aantal: row.aantal,
 			})),
 		);
+
+		if (productsRes.data) {
+			const reqsByProduct = new Map<string, ProductRequirement[]>();
+			(reqsRes.data ?? []).forEach((r) => {
+				const list = reqsByProduct.get(r.product_id) ?? [];
+				list.push(r);
+				reqsByProduct.set(r.product_id, list);
+			});
+			setProducts(
+				productsRes.data.map((p) => ({
+					...p,
+					requirements: reqsByProduct.get(p.id) ?? [],
+				})),
+			);
+		}
 	}, [project.id]);
 
 	useEffect(() => {
 		setLoading(true);
-		loadItems().finally(() => setLoading(false));
-	}, [loadItems]);
+		loadData().finally(() => setLoading(false));
+	}, [loadData]);
 
 	useEffect(() => {
 		function onEsc(e: KeyboardEvent) {
@@ -127,12 +155,11 @@ export function PakbonOverlay({
 			setError(result.error ?? 'Onbekende fout');
 			return;
 		}
-		await loadItems();
+		await loadData();
 		setEditMode(false);
 		setEditItems([]);
 	}
 
-	// Groepeer per categorie voor de view
 	const grouped = LINE_ITEM_CATEGORIES.map((cat) => ({
 		categorie: cat,
 		items: items.filter((it) => it.categorie === cat),
@@ -158,7 +185,6 @@ export function PakbonOverlay({
 
 	return (
 		<div className='fixed inset-0 z-[100] bg-white overflow-y-auto'>
-			{/* Toolbar */}
 			<div className='no-print sticky top-0 bg-white border-b border-cream-300 px-6 py-3 flex items-center gap-3 z-10'>
 				{!editMode ? (
 					<>
@@ -229,7 +255,6 @@ export function PakbonOverlay({
 					id='pakbon-print'
 					className='max-w-3xl mx-auto px-6 py-8 text-charcoal-900'
 				>
-					{/* Header */}
 					<div className='flex justify-between items-start pb-4 mb-8 border-b-[3px] border-forest-500'>
 						<div>
 							<div className='font-display text-3xl font-bold text-forest-500'>
@@ -248,12 +273,10 @@ export function PakbonOverlay({
 						</div>
 					</div>
 
-					{/* Klant */}
 					<div className='font-display text-2xl font-bold text-forest-500 mb-5'>
 						{project.klant_naam || '—'}
 					</div>
 
-					{/* Project info */}
 					<div className='grid grid-cols-[140px_1fr] gap-2 bg-paper-50 rounded-xl p-4 mb-7 text-sm'>
 						<span className='text-charcoal-900/60 font-semibold'>
 							Locatie
@@ -315,7 +338,6 @@ export function PakbonOverlay({
 						)}
 					</div>
 
-					{/* Artikelen */}
 					{loading ? (
 						<div className='text-sm text-charcoal-900/60 py-8 text-center'>
 							Artikelen laden...
@@ -339,23 +361,61 @@ export function PakbonOverlay({
 									<div className='text-[11px] font-bold text-forest-500 uppercase tracking-wider mt-3.5 mb-1'>
 										{g.categorie}
 									</div>
-									{g.items.map((it, i) => (
-										<div
-											key={i}
-											className='grid grid-cols-[1fr_80px] gap-2 py-1.5 border-b border-cream-300/60 text-sm'
-										>
-											<span>{it.naam}</span>
-											<span className='text-right font-semibold'>
-												{it.aantal}
-											</span>
-										</div>
-									))}
+									{g.items.map((it, i) => {
+										const match = findProductMatch(
+											it.naam,
+											products,
+										);
+										const reqs = match?.requirements ?? [];
+										const aantal = parseAantal(it.aantal);
+										return (
+											<div
+												key={i}
+												className='border-b border-cream-300/60 last:border-b-0'
+											>
+												<div className='grid grid-cols-[1fr_80px] gap-2 py-1.5 text-sm'>
+													<span>{it.naam}</span>
+													<span className='text-right font-semibold'>
+														{it.aantal}
+													</span>
+												</div>
+												{reqs.length > 0 && (
+													<div className='pl-4 pb-2 text-xs text-charcoal-900/70 space-y-0.5'>
+														{reqs.map((r) => {
+															const total =
+																Math.round(
+																	r.aantal *
+																		aantal *
+																		100,
+																) / 100;
+															return (
+																<div
+																	key={r.id}
+																	className='flex gap-2'
+																>
+																	<span className='text-charcoal-900/40'>
+																		•
+																	</span>
+																	<span>
+																		{formatNum(
+																			total,
+																		)}
+																		×{' '}
+																		{r.naam}
+																	</span>
+																</div>
+															);
+														})}
+													</div>
+												)}
+											</div>
+										);
+									})}
 								</div>
 							))}
 						</div>
 					)}
 
-					{/* Team */}
 					<div className='grid grid-cols-2 gap-4 mb-6'>
 						<div className='bg-forest-50 border border-forest-100 rounded-xl p-4'>
 							<div className='text-[10px] font-bold uppercase tracking-wider text-forest-600 mb-2'>
@@ -375,14 +435,12 @@ export function PakbonOverlay({
 						</div>
 					</div>
 
-					{/* Notities */}
 					{project.notities && (
 						<div className='bg-amber-50 border-l-[3px] border-amber-500 rounded-r-lg px-4 py-3 text-sm mb-6 text-amber-900'>
 							⚠ {project.notities}
 						</div>
 					)}
 
-					{/* Footer */}
 					<div className='mt-8 pt-3 border-t border-cream-300 text-[11px] text-charcoal-900/60 text-center'>
 						{COMPANY.name} • {COMPANY.address} • {COMPANY.phone} •{' '}
 						{COMPANY.email}
@@ -481,4 +539,12 @@ function EditTable({
 			</div>
 		</div>
 	);
+}
+
+function formatNum(n: number): string {
+	if (Number.isInteger(n)) return String(n);
+	return n
+		.toFixed(2)
+		.replace(/\.?0+$/, '')
+		.replace('.', ',');
 }
