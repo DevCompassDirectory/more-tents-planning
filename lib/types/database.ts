@@ -101,3 +101,26 @@ export type ProjectFile = {
 	uploaded_by: string;
 	uploaded_at: string;
 };
+
+export type Product = {
+	id: string;
+	naam: string;
+	maat: string;
+	categorie: LineItemCategorie;
+	notities: string;
+	created_at: string;
+	updated_at: string;
+};
+
+export type ProductRequirement = {
+	id: string;
+	product_id: string;
+	naam: string;
+	aantal: number;
+	sort_order: number;
+	created_at: string;
+};
+
+export type ProductWithRequirements = Product & {
+	requirements: ProductRequirement[];
+};
