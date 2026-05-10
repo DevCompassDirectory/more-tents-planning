@@ -9,6 +9,7 @@ import {
 	type CreateProjectState,
 } from '@/lib/projects/actions';
 import { PROJECT_STATUSES } from '@/lib/types/database';
+import { DayContext } from '@/components/DayContext';
 
 const initialState: CreateProjectState = { error: null, success: false };
 
@@ -160,6 +161,22 @@ function PdfImportForm({
 	);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	const [datumOpbouw, setDatumOpbouw] = useState(parsed.datum_opbouw ?? '');
+	const [datumAfbouw, setDatumAfbouw] = useState(parsed.datum_afbouw ?? '');
+	const [inhuurOpbouw, setInhuurOpbouw] = useState('');
+	const [inhuurAfbouw, setInhuurAfbouw] = useState('');
+
+	function addInhuurName(phase: 'opbouw' | 'afbouw', name: string) {
+		const setter = phase === 'opbouw' ? setInhuurOpbouw : setInhuurAfbouw;
+		const current = phase === 'opbouw' ? inhuurOpbouw : inhuurAfbouw;
+		const names = current
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean);
+		if (names.includes(name)) return;
+		setter([...names, name].join(', '));
+	}
+
 	useEffect(() => {
 		if (fileInputRef.current) {
 			const dt = new DataTransfer();
@@ -276,12 +293,13 @@ function PdfImportForm({
 			</Section>
 
 			<Section title={<>Opbouw {detBadge(parsed.datum_opbouw)}</>}>
-				<div className='grid grid-cols-3 gap-3'>
+				<div className='grid grid-cols-3 gap-3 mb-4'>
 					<Field label='Datum'>
 						<input
 							type='date'
 							name='datum_opbouw'
-							defaultValue={parsed.datum_opbouw ?? ''}
+							value={datumOpbouw}
+							onChange={(e) => setDatumOpbouw(e.target.value)}
 							className={`${inputCls} ${detCls(parsed.datum_opbouw)}`}
 						/>
 					</Field>
@@ -301,15 +319,21 @@ function PdfImportForm({
 						/>
 					</Field>
 				</div>
+				<DayContext
+					date={datumOpbouw}
+					currentInhuur={inhuurOpbouw}
+					onAddInhuur={(name) => addInhuurName('opbouw', name)}
+				/>
 			</Section>
 
 			<Section title={<>Afbouw {detBadge(parsed.datum_afbouw)}</>}>
-				<div className='grid grid-cols-3 gap-3'>
+				<div className='grid grid-cols-3 gap-3 mb-4'>
 					<Field label='Datum'>
 						<input
 							type='date'
 							name='datum_afbouw'
-							defaultValue={parsed.datum_afbouw ?? ''}
+							value={datumAfbouw}
+							onChange={(e) => setDatumAfbouw(e.target.value)}
 							className={`${inputCls} ${detCls(parsed.datum_afbouw)}`}
 						/>
 					</Field>
@@ -329,6 +353,11 @@ function PdfImportForm({
 						/>
 					</Field>
 				</div>
+				<DayContext
+					date={datumAfbouw}
+					currentInhuur={inhuurAfbouw}
+					onAddInhuur={(name) => addInhuurName('afbouw', name)}
+				/>
 			</Section>
 
 			<Section title='Laden & Lossen (optioneel)'>
@@ -390,6 +419,8 @@ function PdfImportForm({
 					<Field label='Inhuur opbouw'>
 						<input
 							name='inhuur_opbouw'
+							value={inhuurOpbouw}
+							onChange={(e) => setInhuurOpbouw(e.target.value)}
 							placeholder='Kevin, Bart'
 							className={inputCls}
 						/>
@@ -397,6 +428,8 @@ function PdfImportForm({
 					<Field label='Inhuur afbouw'>
 						<input
 							name='inhuur_afbouw'
+							value={inhuurAfbouw}
+							onChange={(e) => setInhuurAfbouw(e.target.value)}
 							placeholder='Kevin'
 							className={inputCls}
 						/>

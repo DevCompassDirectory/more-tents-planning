@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import {
 	createProject,
 	updateProject,
@@ -8,6 +8,7 @@ import {
 	type CreateProjectState,
 } from '@/lib/projects/actions';
 import { PROJECT_STATUSES, type Project } from '@/lib/types/database';
+import { DayContext } from '@/components/DayContext';
 
 const initialState: CreateProjectState = { error: null, success: false };
 
@@ -41,6 +42,22 @@ export function ProjectForm({
 		if (!initialProject) return 'Ja';
 		return initialProject[key] === true ? 'Ja' : 'Nee';
 	};
+
+	const [datumOpbouw, setDatumOpbouw] = useState(v('datum_opbouw'));
+	const [datumAfbouw, setDatumAfbouw] = useState(v('datum_afbouw'));
+	const [inhuurOpbouw, setInhuurOpbouw] = useState(v('inhuur_opbouw'));
+	const [inhuurAfbouw, setInhuurAfbouw] = useState(v('inhuur_afbouw'));
+
+	function addInhuurName(phase: 'opbouw' | 'afbouw', name: string) {
+		const setter = phase === 'opbouw' ? setInhuurOpbouw : setInhuurAfbouw;
+		const current = phase === 'opbouw' ? inhuurOpbouw : inhuurAfbouw;
+		const names = current
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean);
+		if (names.includes(name)) return;
+		setter([...names, name].join(', '));
+	}
 
 	async function handleDelete() {
 		if (!initialProject) return;
@@ -108,12 +125,13 @@ export function ProjectForm({
 			</Section>
 
 			<Section title='Opbouw'>
-				<div className='grid grid-cols-3 gap-3'>
+				<div className='grid grid-cols-3 gap-3 mb-4'>
 					<Field label='Datum'>
 						<input
 							type='date'
 							name='datum_opbouw'
-							defaultValue={v('datum_opbouw')}
+							value={datumOpbouw}
+							onChange={(e) => setDatumOpbouw(e.target.value)}
 							className={inputCls}
 						/>
 					</Field>
@@ -134,15 +152,22 @@ export function ProjectForm({
 						/>
 					</Field>
 				</div>
+				<DayContext
+					date={datumOpbouw}
+					currentInhuur={inhuurOpbouw}
+					excludeProjectId={initialProject?.id}
+					onAddInhuur={(name) => addInhuurName('opbouw', name)}
+				/>
 			</Section>
 
 			<Section title='Afbouw'>
-				<div className='grid grid-cols-3 gap-3'>
+				<div className='grid grid-cols-3 gap-3 mb-4'>
 					<Field label='Datum'>
 						<input
 							type='date'
 							name='datum_afbouw'
-							defaultValue={v('datum_afbouw')}
+							value={datumAfbouw}
+							onChange={(e) => setDatumAfbouw(e.target.value)}
 							className={inputCls}
 						/>
 					</Field>
@@ -163,6 +188,12 @@ export function ProjectForm({
 						/>
 					</Field>
 				</div>
+				<DayContext
+					date={datumAfbouw}
+					currentInhuur={inhuurAfbouw}
+					excludeProjectId={initialProject?.id}
+					onAddInhuur={(name) => addInhuurName('afbouw', name)}
+				/>
 			</Section>
 
 			<Section title='Laden & Lossen (optioneel)'>
@@ -244,7 +275,8 @@ export function ProjectForm({
 					<Field label='Inhuur opbouw'>
 						<input
 							name='inhuur_opbouw'
-							defaultValue={v('inhuur_opbouw')}
+							value={inhuurOpbouw}
+							onChange={(e) => setInhuurOpbouw(e.target.value)}
 							placeholder='Kevin, Bart'
 							className={inputCls}
 						/>
@@ -252,7 +284,8 @@ export function ProjectForm({
 					<Field label='Inhuur afbouw'>
 						<input
 							name='inhuur_afbouw'
-							defaultValue={v('inhuur_afbouw')}
+							value={inhuurAfbouw}
+							onChange={(e) => setInhuurAfbouw(e.target.value)}
 							placeholder='Kevin'
 							className={inputCls}
 						/>
