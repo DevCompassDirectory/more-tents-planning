@@ -39,10 +39,13 @@ body {
 		visibility: hidden;
 	}
 	#pakbon-print,
-	#pakbon-print * {
+	#pakbon-print *,
+	#planning-print,
+	#planning-print * {
 		visibility: visible;
 	}
-	#pakbon-print {
+	#pakbon-print,
+	#planning-print {
 		position: absolute !important;
 		left: 0;
 		top: 0;
@@ -50,8 +53,17 @@ body {
 		padding: 0 !important;
 		background: white !important;
 	}
+	#planning-print,
+	#planning-print * {
+		-webkit-print-color-adjust: exact !important;
+		print-color-adjust: exact !important;
+	}
 	.no-print {
 		display: none !important;
+	}
+	.planning-day {
+		page-break-inside: avoid;
+		break-inside: avoid;
 	}
 }
 
