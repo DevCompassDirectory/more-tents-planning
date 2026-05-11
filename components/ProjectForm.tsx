@@ -7,6 +7,7 @@ import {
 	deleteProject,
 	type CreateProjectState,
 } from '@/lib/projects/actions';
+import { findProjectByOfferteNr } from '@/lib/projects/duplicate';
 import { PROJECT_STATUSES, type Project } from '@/lib/types/database';
 import { DayContext } from '@/components/DayContext';
 
@@ -47,6 +48,48 @@ export function ProjectForm({
 	const [datumAfbouw, setDatumAfbouw] = useState(v('datum_afbouw'));
 	const [inhuurOpbouw, setInhuurOpbouw] = useState(v('inhuur_opbouw'));
 	const [inhuurAfbouw, setInhuurAfbouw] = useState(v('inhuur_afbouw'));
+	const [duplicate, setDuplicate] = useState<Project | null>(null);
+
+	async function handleOfferteNrBlur(e: React.FocusEvent<HTMLInputElement>) {
+		const value = e.target.value.trim();
+		if (!value) {
+			setDuplicate(null);
+			return;
+		}
+		if (initialProject && value === initialProject.offerte_nr) {
+			setDuplicate(null);
+			return;
+		}
+		const existing = await findProjectByOfferteNr(value);
+		if (existing && existing.id !== initialProject?.id) {
+			setDuplicate(existing);
+		} else {
+			setDuplicate(null);
+		}
+	}
+
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		const formData = new FormData(e.currentTarget);
+
+		// Tweede klik (duplicate al bekend en zichtbaar) = bewust doorgaan
+		if (duplicate) {
+			formAction(formData);
+			return;
+		}
+
+		// Eerste klik: doe een verse check (ook als blur nog niet liep)
+		const offerteNr = ((formData.get('offerte_nr') as string) ?? '').trim();
+		if (offerteNr && offerteNr !== (initialProject?.offerte_nr ?? '')) {
+			const existing = await findProjectByOfferteNr(offerteNr);
+			if (existing && existing.id !== initialProject?.id) {
+				setDuplicate(existing);
+				return; // Niet opslaan, laat user de waarschuwing zien
+			}
+		}
+
+		formAction(formData);
+	}
 
 	function addInhuurName(phase: 'opbouw' | 'afbouw', name: string) {
 		const setter = phase === 'opbouw' ? setInhuurOpbouw : setInhuurAfbouw;
@@ -73,7 +116,7 @@ export function ProjectForm({
 
 	return (
 		<form
-			action={formAction}
+			onSubmit={handleSubmit}
 			className='px-7 py-6'
 		>
 			<Section title='Algemeen'>
@@ -82,9 +125,17 @@ export function ProjectForm({
 						<input
 							name='offerte_nr'
 							defaultValue={v('offerte_nr')}
+							onBlur={handleOfferteNrBlur}
 							placeholder='MT-2026-001'
-							className={inputCls}
+							className={`${inputCls} ${
+								duplicate
+									? 'border-amber-400 bg-amber-50/30'
+									: ''
+							}`}
 						/>
+						{duplicate && (
+							<DuplicateInlineWarning duplicate={duplicate} />
+						)}
 					</Field>
 					<Field label='Status'>
 						<select
@@ -346,13 +397,43 @@ export function ProjectForm({
 				<button
 					type='submit'
 					disabled={pending}
-					className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'
+					className={`px-5 py-2.5 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors ${
+						duplicate
+							? 'bg-amber-500 hover:bg-amber-600'
+							: 'bg-forest-500 hover:bg-forest-600'
+					}`}
 				>
-					{pending ? 'Opslaan...' : 'Opslaan'}
+					{pending
+						? 'Opslaan...'
+						: duplicate
+							? 'Toch opslaan (duplicaat)'
+							: 'Opslaan'}
 				</button>
 			</div>
 		</form>
 	);
+}
+
+function DuplicateInlineWarning({ duplicate }: { duplicate: Project }) {
+	return (
+		<div className='bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-1.5 text-xs'>
+			<div className='font-semibold text-amber-900 mb-0.5'>
+				⚠️ Dit nummer is al in gebruik
+			</div>
+			<div className='text-amber-900/80 leading-relaxed'>
+				{duplicate.klant_naam || 'Naamloos'}
+				{duplicate.locatie && ` · ${duplicate.locatie}`}
+				{duplicate.datum_opbouw &&
+					` · opbouw ${formatDateNL(duplicate.datum_opbouw)}`}
+			</div>
+		</div>
+	);
+}
+
+function formatDateNL(iso: string): string {
+	const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+	if (!m) return iso;
+	return `${m[3]}-${m[2]}-${m[1]}`;
 }
 
 const inputCls =
