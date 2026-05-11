@@ -8,7 +8,8 @@ import {
 	createProjectFromPdf,
 	type CreateProjectState,
 } from '@/lib/projects/actions';
-import { PROJECT_STATUSES } from '@/lib/types/database';
+import { PROJECT_STATUSES, type Project } from '@/lib/types/database';
+import { findProjectByOfferteNr } from '@/lib/projects/duplicate';
 import { DayContext } from '@/components/DayContext';
 
 const initialState: CreateProjectState = { error: null, success: false };
@@ -82,6 +83,10 @@ function PdfImportContent({
 	const [parsed, setParsed] = useState<ParsedPdfFields | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [extractError, setExtractError] = useState<string | null>(null);
+	const [existingProject, setExistingProject] = useState<Project | null>(
+		null,
+	);
+	const [forceNew, setForceNew] = useState(false);
 
 	useEffect(() => {
 		let blobUrl = '';
@@ -95,7 +100,18 @@ function PdfImportContent({
 				const text = await extractPdfText(file);
 				if (cancelled) return;
 
-				setParsed(parsePdfText(text));
+				const parsedData = parsePdfText(text);
+				if (cancelled) return;
+				setParsed(parsedData);
+
+				if (parsedData.offerte_nr) {
+					const existing = await findProjectByOfferteNr(
+						parsedData.offerte_nr,
+					);
+					if (!cancelled && existing) {
+						setExistingProject(existing);
+					}
+				}
 			} catch (e) {
 				if (!cancelled)
 					setExtractError(
@@ -113,6 +129,9 @@ function PdfImportContent({
 			if (blobUrl) URL.revokeObjectURL(blobUrl);
 		};
 	}, [file]);
+
+	const showWarning = parsed && existingProject && !forceNew;
+	const showForm = parsed && (!existingProject || forceNew);
 
 	return (
 		<div className='grid grid-cols-1 md:grid-cols-2 h-[calc(90vh-4rem)] overflow-hidden'>
@@ -134,7 +153,14 @@ function PdfImportContent({
 				{extractError && (
 					<div className='p-8 text-red-700'>{extractError}</div>
 				)}
-				{parsed && (
+				{showWarning && existingProject && (
+					<DuplicateWarning
+						existing={existingProject}
+						onCancel={onClose}
+						onForceNew={() => setForceNew(true)}
+					/>
+				)}
+				{showForm && parsed && (
 					<PdfImportForm
 						file={file}
 						parsed={parsed}
@@ -552,4 +578,101 @@ function YesNoSelect({ name }: { name: string }) {
 			<option value='Nee'>Nee</option>
 		</select>
 	);
+}
+
+function DuplicateWarning({
+	existing,
+	onCancel,
+	onForceNew,
+}: {
+	existing: Project;
+	onCancel: () => void;
+	onForceNew: () => void;
+}) {
+	return (
+		<div className='p-6'>
+			<div className='bg-amber-50 border border-amber-200 rounded-lg px-5 py-4 mb-5'>
+				<div className='flex items-start gap-3'>
+					<div className='text-2xl leading-none'>⚠️</div>
+					<div className='flex-1'>
+						<div className='text-sm font-bold text-amber-900 mb-1'>
+							Deze offerte staat al in het systeem
+						</div>
+						<div className='text-sm text-amber-900/80 leading-relaxed'>
+							Offertenummer <strong>{existing.offerte_nr}</strong>{' '}
+							hoort al bij een bestaand project. Wil je dat
+							project bijwerken, ga dan via de Lijst-tab naar het
+							project en gebruik de update-knop.
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div className='text-xs font-bold text-forest-500 uppercase tracking-wider pb-1.5 mb-3 border-b border-forest-50'>
+				Bestaand project
+			</div>
+			<div className='bg-paper-50 border border-cream-300 rounded-lg p-4 mb-5'>
+				<div className='flex items-baseline justify-between mb-2 gap-3'>
+					<div className='text-base font-medium text-charcoal-900'>
+						{existing.klant_naam || 'Naamloos'}
+					</div>
+					{existing.status && (
+						<span className='text-[10px] px-2 py-0.5 rounded-full font-medium bg-charcoal-900/10 text-charcoal-900/70 whitespace-nowrap'>
+							{existing.status}
+						</span>
+					)}
+				</div>
+				{existing.locatie && (
+					<div className='text-sm text-charcoal-900/70 mb-3'>
+						{existing.locatie}
+					</div>
+				)}
+				<div className='grid grid-cols-2 gap-3 text-xs'>
+					{existing.datum_opbouw && (
+						<div>
+							<div className='text-charcoal-900/50 mb-0.5 uppercase tracking-wider text-[10px]'>
+								Opbouw
+							</div>
+							<div className='font-medium'>
+								{formatDateNL(existing.datum_opbouw)}
+							</div>
+						</div>
+					)}
+					{existing.datum_afbouw && (
+						<div>
+							<div className='text-charcoal-900/50 mb-0.5 uppercase tracking-wider text-[10px]'>
+								Afbouw
+							</div>
+							<div className='font-medium'>
+								{formatDateNL(existing.datum_afbouw)}
+							</div>
+						</div>
+					)}
+				</div>
+			</div>
+
+			<div className='flex gap-3 justify-end'>
+				<button
+					type='button'
+					onClick={onForceNew}
+					className='px-5 py-2.5 bg-white border border-cream-300 hover:border-amber-300 text-charcoal-900/70 font-medium rounded-lg transition-colors text-sm'
+				>
+					Toch nieuw aanmaken
+				</button>
+				<button
+					type='button'
+					onClick={onCancel}
+					className='px-5 py-2.5 bg-forest-500 hover:bg-forest-600 text-white font-medium rounded-lg transition-colors'
+				>
+					Sluiten
+				</button>
+			</div>
+		</div>
+	);
+}
+
+function formatDateNL(iso: string): string {
+	const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+	if (!m) return iso;
+	return `${m[3]}-${m[2]}-${m[1]}`;
 }
