@@ -55,15 +55,16 @@ export function parsePdfText(text: string): ParsedPdfFields {
 	if (numberMatch) result.offerte_nr = numberMatch[1];
 
 	// Klant naam: tussen "Factuuradres" en eerste straat+nummer+postcode
-	// Pattern: <klant> <straatnaam> <huisnummer[letter]> <postcode> <plaats>
 	const klantStrict = text.match(
-		/Factuuradres\s+(.+?)\s+\S+\s+\d+[A-Za-z]?\s+\d{4}\s*[A-Z]{2}/,
+		/Factuuradres\s+(.+?)\s+\S+\s+\d+[A-Za-z]?[,.]?\s+\d{4}\s*[A-Z]{2}/,
 	);
 	if (klantStrict) {
 		result.klant_naam = klantStrict[1].trim();
 	} else {
-		// Fallback: alles tot eerste echte break (oude gedrag)
-		const klantFallback = text.match(/Factuuradres\s+(.+?)(?=\s{2,}|\n|$)/);
+		// Fallback: stop bij telefoon, postcode of volgende sectie
+		const klantFallback = text.match(
+			/Factuuradres\s+(.+?)(?=\s+(?:\+\d|\d{4}\s*[A-Z]{2}|Afleveradres))/,
+		);
 		if (klantFallback) result.klant_naam = klantFallback[1].trim();
 	}
 
